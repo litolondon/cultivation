@@ -8,13 +8,173 @@
   let name = "";
 
   const namePrefixes = [
-    "Azure", "Crimson", "Silent", "Heavenly", "Shadow", "Silver", "Golden",
-    "Radiant", "Void", "Ethereal", "Burning", "Frost", "Storm", "Iron", "Divine"
+    "Li",      // plum
+    "Wang",    // king
+    "Zhang",   // open bow
+    "Liu",     // willow
+    "Chen",    // dawn
+    "Yang",    // poplar
+    "Huang",   // yellow
+    "Zhao",    // shine
+    "Wu",      // martial
+    "Zhou",    // continent
+    "Xu",      // allow
+    "Sun",     // grandson
+    "Ma",      // horse
+    "Zhu",     // pearl
+    "Hu",      // tiger
+    "Guo",     // country
+    "He",      // river
+    "Gao",     // tall
+    "Lin",     // forest
+    "Luo",     // net
+    "Zheng",   // upright
+    "Liang",   // good
+    "Xie",     // thank
+    "Song",    // pine
+    "Tang",    // hall
+    "Han",     // vast
+    "Feng",    // phoenix
+    "Yu",      // jade
+    "Dong",    // east
+    "Xiao",    // small
+    "Cheng",   // succeed
+    "Su",      // plain
+    "Pan",     // plate
+    "Du",      // alone
+    "Ye",      // leaf
+    "Bai",     // white
+    "Tan",     // deep pool
+    "Ren",     // benevolence
+    "Peng",    // roc
+    "Mo",      // ink
+    "An",      // peace
+    "Dai",     // belt
+    "Kang",    // healthy
+    "Duan",    // segment
+    "Ding",    // stable
+    "Qin",     // zither
+    "Zou",     // run
+    "Yan",     // swallow
+    "Gu",      // drum
+    "Jin",     // gold
+    "Pu",      // plain
+    "Jia",     // armor
+    "Rao",     // disturb
+    "Qi",      // odd/strange
+    "Tao",     // peach
+    "Qiu",     // hill
+    "Nan",     // south
+    "Yuan",    // origin
+    "Shen",    // spirit
+    "Kong",    // empty
+    "Mao",     // catkin
+    "Lan",     // orchid
+    "Cui",     // emerald
+    "Xiong",   // bear
+    "Pei",     // match
+    "Bao",     // cherish
+    "Yao",     // call
+    "Xue",     // snow
+    "Zeng",    // increase
+    "Shi",     // scholar/stone
+    "Jiang",   // river
+    "Nie",     // pinch
+    "Liao",    // gourd
+    "Yin",     // hidden
+    "Lu",      // dew
+    "Hua",     // flower
+    "Rui",     // auspicious
+    "Zhong",   // loyal
+    "You",     // again
+    "Ruan",    // soft
+    "Min",     // quick
+    "Fan",     // reverse
+    "Guo",     // pass through
+    "Liu",     // flow
+    "Meng"     // dream
+
   ];
 
   const nameSuffixes = [
-    "Blade", "Lotus", "Fang", "Whisper", "Tiger", "Phoenix", "Serpent",
-    "Monk", "Shadow", "Cloud", "Dragon", "Flame", "Spirit", "Soul", "Demon"
+    "Xian",        // Immortal  
+    "Sheng",       // Saint  
+    "ShengRen",    // Sage  
+    "ShiFu",       // Master  
+    "Ling",        // Spirit  
+    "Gui",         // Ghost  
+    "Mo",          // Demon  
+    "Long",        // Dragon  
+    "FengHuang",   // Phoenix  
+    "Hu",          // Tiger  
+    "She",         // Serpent  
+    "Ying",        // Eagle or Shadow  
+    "Dao",         // Blade  
+    "Jian",        // Sword  
+    "Zhang",       // Palm  
+    "Feng",        // Peak / Wind  
+    "Gu",          // Valley  
+    "Shan",        // Mountain  
+    "Hai",         // Ocean  
+    "Yun",         // Cloud  
+    "Yu",          // Rain  
+    "Lei",         // Thunder  
+    "Dian",        // Lightning  
+    "Shi",         // Stone  
+    "Lian",        // Lotus  
+    "Yue",         // Moon  
+    "Ri",          // Sun  
+    "Xing",        // Star  
+    "Hun",         // Soul  
+    "Ding",        // Zenith  
+    "Xu",          // Abyss  
+    "Jing",        // Realm / Crystal  
+    "Ting",        // Tribunal  
+    "Tian",        // Heaven  
+    "Kong",        // Void  
+    "Huan",        // Mirage  
+    "Yong",        // Eternity  
+    "WuXian",      // Infinity  
+    "HunDun",      // Chaos  
+    "ZhiXu",       // Order  
+    "HeXie",       // Harmony  
+    "Yi",          // Justice  
+    "Nu",          // Wrath  
+    "JiNu",        // Fury  
+    "ShengYin",    // Sound  
+    "JingYin",     // Silence  
+    "Huo",         // Flame  
+    "Bing",        // Frost / Ice  
+    "BaoFeng",     // Storm  
+    "Wu",          // Mist  
+    "HeiAn",       // Darkness  
+    "Guang",       // Light / Radiance  
+    "Yan",         // Ember  
+    "Hui",         // Ash  
+    "Tong",        // Bronze / Copper  
+    "Tie",         // Iron  
+    "Gang",        // Steel  
+    "Jin",         // Gold  
+    "Yin",         // Silver  
+    "HeiYanShi",   // Obsidian  
+    "ShuiJing",    // Crystal / Quartz  
+    "Zhu",         // Pearl  
+    "Yu",          // Jade  
+    "LanJing",     // Sapphire  
+    "ZhuBao",      // Ruby  
+    "FeiCui",      // Emerald  
+    "LuoBoLi",     // Opal  
+    "HuanXi",      // Twilight  
+    "ChenXi",      // Dawn  
+    "HuangHun",    // Dusk  
+    "TianYa",      // Horizon  
+    "HuiYing",     // Echo  
+    "QingWen",     // Whisper  
+    "DaoLu",       // Path  
+    "Dao",         // Way  
+    "Pai",         // Sect  
+    "BuMen",       // Tribe  
+    "ChaoDai"      // Dynasty  
   ];
 
   function randomizeName() {
@@ -30,7 +190,8 @@
     dexterity: 0,
     strength: 0,
     qiAffinity: 0,
-    luck: 0
+    luck: 0,
+    lifespan: 0
   };
 
   let addedStats = {
@@ -40,7 +201,8 @@
     dexterity: 0,
     strength: 0,
     qiAffinity: 0,
-    luck: 0
+    luck: 0,
+    lifespan: 0
   };
 
   let pointsRemaining = 5;
@@ -60,10 +222,11 @@
         dexterity: rand(1, 5),
         strength: rand(1, 5),
         qiAffinity: rand(1, 5),
-        luck: rand(0, 10)
+        luck: rand(0, 10),
+        lifespan: rand(16, 60)
       };
       total = Object.values(generated).reduce((acc, v) => acc + v, 0);
-    } while (total < 20 || total > 30);
+    } while (total < 20 || total > 35);
 
     baseStats = generated;
     pointsRemaining = 5;

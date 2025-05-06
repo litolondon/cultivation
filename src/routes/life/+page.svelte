@@ -33,13 +33,36 @@
   };
 
   let character: Character | null = null;
+  // Selected actions for the current year
+  let selectedActions: LifeEventDef[] = [];
+
+  $: actionCounts = selectedActions.reduce((acc, act) => {
+    acc[act.title] = (acc[act.title] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  let groupedLifeEvents: { event: LifeEvent; count: number }[] = [];
+  $: if (character) {
+    const map = new Map<string, { event: LifeEvent; count: number }>();
+    for (const ev of character.lifeEvents) {
+      if (map.has(ev.title)) {
+        map.get(ev.title)!.count += 1;
+      } else {
+        map.set(ev.title, { event: ev, count: 1 });
+      }
+    }
+    groupedLifeEvents = Array.from(map.values());
+  } else {
+    groupedLifeEvents = [];
+  }
+
 
   // Event pools
   const childhoodEvents: LifeEventDef[] = [
-    { title: 'First Steps', description: 'You took your first steps.', pointsReward: 1, weight: 0.175, good: true },
-    { title: 'Early Memory', description: 'You remember your first friend.', pointsReward: 1, weight: 0.175, good: true },
-    { title: 'Play Time', description: 'You played games.', pointsReward: 1, weight: 0.175, good: true },
-    { title: 'Lullaby', description: 'You sang a soothing lullaby.', pointsReward: 1, weight: 0.175, good: true },
+    { title: 'First Steps', description: 'You took your first steps.', pointsReward: 0, weight: 0.175, good: true },
+    { title: 'Early Memory', description: 'You remember your first friend.', pointsReward: 0, weight: 0.175, good: true },
+    { title: 'Play Time', description: 'You played games.', pointsReward: 0, weight: 0.175, good: true },
+    { title: 'Lullaby', description: 'You heard a soothing lullaby.', pointsReward: 0, weight: 0.175, good: true },
     { title: 'Nothing happens', description: 'Nothing special happened this year.', pointsReward: 0, weight: 0.30, good: false }
   ];
   const chronologicalEvents: LifeEventDef[] = [
@@ -78,6 +101,27 @@
     { title: 'Nothing happens', description: 'Nothing of note happened in the sect.', pointsReward: 0, weight: 0.30, good: false }
   ];
 
+  // Action events available to choose as life events
+  const actionEvents5: LifeEventDef[] = [
+    { title: 'Imagine', description: 'You let your imagination run wild.', pointsReward: 0, good: false },
+    { title: 'Play', description: 'You played joyfully.', pointsReward: 0, good: true },
+    { title: 'Observe', description: 'You studied your surroundings.', pointsReward: 0, good: false }
+  ];
+
+  // Choose up to 3 actions per year
+    // Choose up to 3 actions per year (duplicates allowed)
+  function selectAction(def: LifeEventDef) {
+  if (!character) return;
+    if (selectedActions.length < 3) {
+      selectedActions = [...selectedActions, def];
+    }
+  }
+
+  function clearSelectedActions() {
+    selectedActions = [];
+  }
+  
+
   function saveCharacter() {
     if (character) localStorage.setItem('cultivationCharacter', JSON.stringify(character));
   }
@@ -98,6 +142,8 @@
     }
   }
 
+  
+
   // Allocate unallocated points to stats
   function allocatePoint(key: keyof Character['stats']) {
     if (!character || character.unallocatedPoints <= 0) return;
@@ -105,6 +151,51 @@
     character.unallocatedPoints -= 1;
     saveCharacter();
   }
+
+  function performAction(def: LifeEventDef) {
+  if (!character) return;
+
+  const roll = Math.random() * 100;
+
+  switch (def.title) {
+    case 'Imagine':
+      if (roll < 23) {
+        character.stats.qiAffinity += 2;
+      } else if (roll < 95) {
+        character.stats.intelligence += 1;
+      } else {
+        character.stats.luck += 1;
+      }
+      break;
+    case 'Play':
+      if (roll < 1) {
+        character.stats.luck += 2;
+      } else if (roll < 10) {
+        character.stats.charisma += 3;
+      } else if (roll < 50) {
+        character.stats.constitution += 1;
+      } else {
+        character.stats.strength += 1;
+      }
+      break;
+    case 'Observe':
+      if (roll < 69) {
+        character.stats.intelligence += 1;
+      } else if (roll < 99) {
+        character.stats.charisma += 2;
+      } else {
+        character.stats.luck += 2;
+      }
+      break;
+  }
+
+  character.lifeEvents.push({
+    id: Date.now() + Math.random(),
+    title: `Age ${character.age}: ${def.title}`,
+    description: def.description,
+    date: new Date().toISOString()
+  });
+}
 
   // Weighted picker: uses 'weight' field
   function weightedPick(pool: LifeEventDef[]): LifeEventDef {
@@ -124,27 +215,25 @@
   // Advance one year and award points
   function advanceYear() {
     if (!character) return;
-    character.age += 1;
-    const eventsThisYear: LifeEventDef[] = [];
+    character.age++;
+    // apply selected actions
+    selectedActions.forEach(def => performAction(def));
+    // clear after applying
+    selectedActions = [];
 
-    // Childhood
+    const eventsThisYear: LifeEventDef[] = [];
     if (character.age < 16) {
       eventsThisYear.push(weightedPick(childhoodEvents));
     }
-
-    // Chronological
     chronologicalEvents.forEach(def => {
       if (def.ageTrigger === character.age) eventsThisYear.push(def);
     });
-
-    // Adulthood
     if (character.age >= 16) {
       const isGood = Math.random() < 0.5;
       let pool = [...chanceEvents, ...injuryEvents, ...worldEvents];
       if (character.lifeEvents.some(e => e.title.includes('Learn Cultivation'))) pool.push(...sectEvents);
       pool = pool.filter(e => e.good === isGood);
-      const nothing = [...chanceEvents, ...injuryEvents, ...worldEvents, ...sectEvents]
-        .find(e => e.title === 'Nothing happens');
+      const nothing = [...chanceEvents, ...injuryEvents, ...worldEvents, ...sectEvents].find(e => e.title === 'Nothing happens');
       const count = rand(1, 3);
       for (let i = 0; i < count; i++) {
         const pickPool = nothing ? pool.concat(nothing) : pool;
@@ -153,11 +242,9 @@
         if (pick.title === 'Nothing happens') break;
       }
     }
-
-    // Apply events
     eventsThisYear.forEach(def => {
-      character!.qiPoints += def.pointsReward;  // Qi accrual
-      if (def.good) character!.unallocatedPoints += def.pointsReward; // only good give points
+      character!.qiPoints += def.pointsReward;
+      if (def.good) character!.unallocatedPoints += def.pointsReward;
       character!.lifeEvents.push({
         id: Date.now() + Math.random(),
         title: `Age ${character!.age}: ${def.title}`,
@@ -165,9 +252,9 @@
         date: new Date().toISOString()
       });
     });
-
     saveCharacter();
     tryBreakthrough();
+    selectedActions = [];
   }
 
   function resetCharacter() {
@@ -199,7 +286,8 @@
 
 <main>
   {#if character}
-    <h1>🌿 Life for {character.name}</h1>
+  <div class="character-info-container">
+    <h1>🌿 Life of {character.name}</h1>
     <p>Age: {character.age}</p>
     <p>Unallocated Points: {character.unallocatedPoints}</p>
 
@@ -221,40 +309,99 @@
         {/each}
       </ul>
     </section>
+  </div>
 
     <section class="life-events">
       <h2>Life Events</h2>
       <ul>
-        {#each character.lifeEvents as event (event.id)}
+        {#each groupedLifeEvents as item}
           <li>
-            <strong>{event.title}</strong> - {new Date(event.date).toLocaleDateString()}
-            <p>{event.description}</p>
+            <strong>
+              {item.event.title}{item.count > 1 ? ` ×${item.count}` : ''}
+            </strong>
+            <span> - {new Date(item.event.date).toLocaleDateString()}</span>
+            <p>{item.event.description}</p>
           </li>
         {/each}
       </ul>
     </section>
-
-    <section>
-      <h2>Actions</h2>
-      <div>
-        <ul>
-          <li>action 1</li>
-          <li>action 2</li>
-          <li>action 3</li>
-        </ul>
-      </div>
+  <div class="main-action-container">
+    <!-- Action buttons to choose actions -->
+    <section class="actions">
+      <h2>Actions (choose up to 3)</h2>
       <div class="actions-container">
-      {#if character.age < 5}
-      <button>Imagine</button>
-      <button>Play</button>
-      <button>Observe</button>
-      {/if}
+        {#if character.age < 5}
+        {#each actionEvents5 as act}
+          <button
+            type="button"
+            onclick={() => selectAction(act)}
+            disabled={selectedActions.length >= 3}
+          >
+            {act.title}
+          </button>
+        {/each}
+        {/if}
       </div>
     </section>
+     <!-- Selected actions display -->
+    <section class="selected-actions">
+      <h2>Selected Actions</h2>
+      <button type="button" onclick={clearSelectedActions} disabled={selectedActions.length === 0}>
+        Clear
+      </button>
+      <div class="selected-actions-container">
+        {#each selectedActions as act}
+          <ul>
+            <li>{act.title}</li>
+          </ul>
+        {/each}
+      </div>
+    </section>
+  </div>
+   
+    
 
+    <!-- Controls unchanged -->
     <div class="controls">
       <button onclick={advanceYear}>Next Year</button>
       <button onclick={resetCharacter}>🔄 Reset Character</button>
     </div>
   {/if}
 </main>
+
+<style>
+  main {
+    margin: 2rem;
+    padding: 2rem;
+    background-color: #999;
+    color: black;
+    display: flex;
+    flex-direction: row;
+  }
+
+  .life-events {
+    width: 384px;
+    height: 768px;
+    border-radius: 0.75rem;
+    background-color: whitesmoke;
+    padding: 1rem;
+    margin-right: 1rem;
+    overflow-y: scroll;
+  }
+
+  .character-info-container {
+    height: 768px;
+    border-radius: 0.75rem;
+    background-color: whitesmoke;
+    padding: 1rem;
+    margin-right: 1rem;
+  }
+  .main-action-container {
+    height: 768px;
+    border-radius: 0.75rem;
+    background-color: whitesmoke;
+    padding: 1rem;
+    margin-right: 1rem;
+  }
+
+</style>
