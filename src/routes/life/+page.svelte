@@ -24,13 +24,18 @@
   type Character = {
     name: string;
     stats: Record<string, number>;
+    statsOf: Record<string, number>;
     createdAt: string;
     age: number;
+    lifespan: number;
     unallocatedPoints: number;
-    lifeEvents: LifeEvent[];
-    qiPoints: number;            // accumulated Qi for breakthroughs
-    foundationReached: boolean;  // whether Foundation Establishment achieved
+    lifeEvents: LifeEvent[];       
+    stage: boolean[];  // which stage
+    qi: {
+      qiPoints: number,  
+      usedQiPoints: number,  }   
   };
+
 
   let character: Character | null = null;
   // Selected actions for the current year
@@ -105,7 +110,16 @@
   const actionEvents5: LifeEventDef[] = [
     { title: 'Imagine', description: 'You let your imagination run wild.', pointsReward: 0, good: false },
     { title: 'Play', description: 'You played joyfully.', pointsReward: 0, good: true },
-    { title: 'Observe', description: 'You studied your surroundings.', pointsReward: 0, good: false }
+    { title: 'Observe', description: 'You studied your surroundings.', pointsReward: 0, good: false },  
+  ];
+
+  const actionEvents5to14: LifeEventDef[] = [
+    { title: 'Sense Qi', description: 'You let your imagination run wild.', pointsReward: 0, good: false },
+    { title: 'Gather Qi', description: 'You played joyfully.', pointsReward: 0, good: true },
+    { title: 'Explore', description: 'You studied your surroundings.', pointsReward: 0, good: false },
+    { title: 'Socialize', description: 'You studied your surroundings.', pointsReward: 0, good: false },
+    { title: 'Train the Sword', description: 'You studied your surroundings.', pointsReward: 0, good: false }
+
   ];
 
   // Choose up to 3 actions per year
@@ -129,8 +143,7 @@
   // Check and apply breakthrough when Qi threshold reached
   function tryBreakthrough() {
     if (!character) return;
-    if (character.qiPoints >= 1000 && !character.foundationReached) {
-      character.foundationReached = true;
+    if (character.qi.qiPoints >= 1000 && !character.stage) {
       const event: LifeEvent = {
         id: Date.now(),
         title: `Age ${character.age}: Foundation Establishment`,
@@ -216,6 +229,8 @@
   function advanceYear() {
     if (!character) return;
     character.age++;
+
+    character.stats.lifespan--;
     // apply selected actions
     selectedActions.forEach(def => performAction(def));
     // clear after applying
@@ -243,7 +258,7 @@
       }
     }
     eventsThisYear.forEach(def => {
-      character!.qiPoints += def.pointsReward;
+      character!.qi.qiPoints += def.pointsReward;
       if (def.good) character!.unallocatedPoints += def.pointsReward;
       character!.lifeEvents.push({
         id: Date.now() + Math.random(),
@@ -274,14 +289,50 @@
     character = JSON.parse(stored);
     character.age ??= 0;
     character.unallocatedPoints ??= 0;
-    character.qiPoints ??= 0;
-    character.foundationReached ??= false;
+    character.qi.qiPoints ??= 0;
+    if (!Array.isArray(character.stage) || character.stage.length !== 12) {
+    character.stage = Array(12).fill(false);
+    character.stage[1] = true;
+
+    }
     if (!character.lifeEvents || character.lifeEvents.length === 0) {
       const birth: LifeEvent = { id: Date.now(), title: 'Age 0: Birth', description: 'You were born.', date: character.createdAt };
       character.lifeEvents = [birth];
       saveCharacter();
     }
   });
+
+  $: realmNumber = character
+  ? character.stage.findIndex(flag => flag === true)
+  : 0;
+
+  $: currentQi = character
+  ? {
+      c: Math.round(character.qi.qiPoints - character.qi.usedQiPoints)
+    }
+  : 0;
+
+  $: baseStatsOf = character
+  ? {
+      health: Math.round(character.stats.constitution * 2 * realmNumber),
+      stamina:
+        Math.round(((character.stats.constitution + character.stats.dexterity) / 2) *  realmNumber),
+      dodge:
+      ((((character.stats.dexterity / 8) * realmNumber) / 2) / 1000).toFixed(3) + "%",
+      attack: Math.round(character.stats.strength * 1.5 * realmNumber),
+      qiAttack:
+        Math.round((character.stats.qiAffinity / 2) * character.qi.qiPoints * 0.05),
+      persuasion: ((((character.stats.charisma / 4) * realmNumber) / 2) / 1000).toFixed(3) + "%",
+    }
+  : {
+      health: 0,
+      stamina: 0,
+      speed: 0,
+      dodge: 0,
+      vdodge: 0,
+      attack: 0,
+      qiAttack: 0
+    };
 </script>
 
 <main>
@@ -289,10 +340,12 @@
   <div class="character-info-container">
     <h1>🌿 Life of {character.name}</h1>
     <p>Age: {character.age}</p>
+    <p>Realm: {realmNumber - 1}</p>
+    <p>Lifespan: {character.stats.lifespan}</p>
     <p>Unallocated Points: {character.unallocatedPoints}</p>
 
     <section class="stats">
-      <h2>Stats</h2>
+      <h3>Attributes</h3>
       <ul>
         {#each Object.entries(character.stats) as [key, value]}
           <li>
@@ -307,6 +360,19 @@
             {/if}
           </li>
         {/each}
+      </ul>
+
+      <h3>Stats</h3>
+      <ul>
+      {#each Object.entries(baseStatsOf) as [key, value]}
+      <li><strong style="flex:1;">
+        {key.charAt(0).toUpperCase() + key.slice(1)}:
+      </strong>
+      <span>{value}</span></li>
+      {/each}
+      <li><strong>Qi:</strong>
+      <span>{currentQi}/{character.qi.qiPoints}</span>
+      </li>
       </ul>
     </section>
   </div>
@@ -363,11 +429,17 @@
 
     <!-- Controls unchanged -->
     <div class="controls">
+      {#if character.stats.lifespan > 0}
       <button onclick={advanceYear}>Next Year</button>
+      {/if}
       <button onclick={resetCharacter}>🔄 Reset Character</button>
     </div>
   {/if}
 </main>
+
+//menus
+
+//qi-cultivation
 
 <style>
   main {
@@ -402,6 +474,11 @@
     background-color: whitesmoke;
     padding: 1rem;
     margin-right: 1rem;
+  }
+
+  .actions-container > button{
+    margin-right: 1rem;
+    
   }
 
 </style>

@@ -204,6 +204,7 @@
     luck: 0,
     lifespan: 0
   };
+  
 
   let pointsRemaining = 5;
 
@@ -260,8 +261,10 @@
       name,
       stats: finalStats,
       createdAt: new Date().toISOString(),
-      unallocatedPoints: pointsRemaining  // save remaining points
+      unallocatedPoints: pointsRemaining,  // save remaining points
+      stage: Array(12).fill(false),
     };
+    character.stage[1] = true;
     localStorage.setItem("cultivationCharacter", JSON.stringify(character));
     alert("Character created and saved!");
     goto("/life");("/life");
