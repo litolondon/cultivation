@@ -6,6 +6,7 @@
   let savedCharacter = null;
   let createdParam = "";
   let name = "";
+  let capacity;
 
   const namePrefixes = [
     "Li",      // plum
@@ -229,6 +230,10 @@
       total = Object.values(generated).reduce((acc, v) => acc + v, 0);
     } while (total < 20 || total > 35);
 
+    capacity = rand(250, 1000);
+
+    console.log(capacity)
+
     baseStats = generated;
     pointsRemaining = 5;
     addedStats = Object.keys(addedStats).reduce((acc, key) => ({ ...acc, [key]: 0 }), {});
@@ -263,8 +268,11 @@
       createdAt: new Date().toISOString(),
       unallocatedPoints: pointsRemaining,  // save remaining points
       stage: Array(12).fill(false),
+      qiCapacity: capacity
     };
+
     character.stage[1] = true;
+    character.qiCapacity = capacity;
     localStorage.setItem("cultivationCharacter", JSON.stringify(character));
     alert("Character created and saved!");
     goto("/life");("/life");
@@ -318,6 +326,7 @@
             <button type="button" onclick={() => increaseStat(key)} disabled={pointsRemaining === 0}>+1</button>
           </div>
         {/each}
+        <div class="stat-row"><span>Qi Capacity: {capacity}</span></div>
 
         <p>Points remaining: {pointsRemaining}</p>
 

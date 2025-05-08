@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import type { NumberLiteralType } from 'typescript';
 
   // Structure for life events awarding spendable points
   type LifeEventDef = {
@@ -31,9 +32,10 @@
     unallocatedPoints: number;
     lifeEvents: LifeEvent[];       
     stage: boolean[];  // which stage
-    qi: {
-      qiPoints: number,  
-      usedQiPoints: number,  }   
+    qiPoints: number;  
+    qiCapacity: number;
+    usedStam: number;
+    lostHealth: number;
   };
 
 
@@ -114,7 +116,7 @@
   ];
 
   const actionEvents5to14: LifeEventDef[] = [
-    { title: 'Sense Qi', description: 'You let your imagination run wild.', pointsReward: 0, good: false },
+    { title: 'Train Meridians', description: 'You let your imagination run wild.', pointsReward: 0, good: false },
     { title: 'Gather Qi', description: 'You played joyfully.', pointsReward: 0, good: true },
     { title: 'Explore', description: 'You studied your surroundings.', pointsReward: 0, good: false },
     { title: 'Socialize', description: 'You studied your surroundings.', pointsReward: 0, good: false },
@@ -143,7 +145,7 @@
   // Check and apply breakthrough when Qi threshold reached
   function tryBreakthrough() {
     if (!character) return;
-    if (character.qi.qiPoints >= 1000 && !character.stage) {
+    if (character.qiPoints >= 1000 && !character.stage) {
       const event: LifeEvent = {
         id: Date.now(),
         title: `Age ${character.age}: Foundation Establishment`,
@@ -258,7 +260,7 @@
       }
     }
     eventsThisYear.forEach(def => {
-      character!.qi.qiPoints += def.pointsReward;
+      character!.qiPoints += def.pointsReward;
       if (def.good) character!.unallocatedPoints += def.pointsReward;
       character!.lifeEvents.push({
         id: Date.now() + Math.random(),
@@ -289,7 +291,9 @@
     character = JSON.parse(stored);
     character.age ??= 0;
     character.unallocatedPoints ??= 0;
-    character.qi.qiPoints ??= 0;
+    character.qiPoints ??= 0;
+    character.usedStam  ??= 0;
+    character.lostHealth ??= 0;
     if (!Array.isArray(character.stage) || character.stage.length !== 12) {
     character.stage = Array(12).fill(false);
     character.stage[1] = true;
@@ -306,23 +310,19 @@
   ? character.stage.findIndex(flag => flag === true)
   : 0;
 
-  $: currentQi = character
-  ? {
-      c: Math.round(character.qi.qiPoints - character.qi.usedQiPoints)
-    }
-  : 0;
-
   $: baseStatsOf = character
   ? {
-      health: Math.round(character.stats.constitution * 2 * realmNumber),
+      health: Math.round(character.stats.constitution * 4 * realmNumber),
       stamina:
         Math.round(((character.stats.constitution + character.stats.dexterity) / 2) *  realmNumber),
       dodge:
-      ((((character.stats.dexterity / 8) * realmNumber) / 2) / 1000).toFixed(3) + "%",
-      attack: Math.round(character.stats.strength * 1.5 * realmNumber),
-      qiAttack:
-        Math.round((character.stats.qiAffinity / 2) * character.qi.qiPoints * 0.05),
-      persuasion: ((((character.stats.charisma / 4) * realmNumber) / 2) / 1000).toFixed(3) + "%",
+      ((((character.stats.dexterity / 8) * realmNumber) / 2) / 1000).toFixed(2),
+      pAttack: Math.round(character.stats.strength * 2 * realmNumber),
+      sAttack:
+        Math.round((character.stats.qiAffinity + character.stats.intelligence / 2) * (character.qiPoints * 0.05)),
+      pDef: Math.round(((character.stats.strength + character.stats.constitution) * 1.5) * realmNumber),
+      sDef: Math.round(((character.stats.qiAffinity + character.stats.intelligence) * 1.5) * realmNumber),
+      persuasion: ((((character.stats.charisma / 4) * realmNumber) / 2) / 1000).toFixed(2),
     }
   : {
       health: 0,
@@ -330,9 +330,28 @@
       speed: 0,
       dodge: 0,
       vdodge: 0,
-      attack: 0,
-      qiAttack: 0
+      pAttack: 0,
+      sAttack: 0,
+      pDef:  0,
+      sDef:  0,
+      persuasion: 0
     };
+
+  $: currStam = character
+  ? {
+     c: baseStatsOf.stamina - character.usedStam
+  }
+  : {
+    c: baseStatsOf.stamina
+  }
+
+  $: currHealth = character
+  ? {
+     c: baseStatsOf.health - character.lostHealth
+  }
+  : {
+    c: baseStatsOf.health
+  }
 </script>
 
 <main>
@@ -347,6 +366,7 @@
     <section class="stats">
       <h3>Attributes</h3>
       <ul>
+
         {#each Object.entries(character.stats) as [key, value]}
           <li>
             <strong style="flex:1;">
@@ -364,15 +384,34 @@
 
       <h3>Stats</h3>
       <ul>
-      {#each Object.entries(baseStatsOf) as [key, value]}
-      <li><strong style="flex:1;">
-        {key.charAt(0).toUpperCase() + key.slice(1)}:
-      </strong>
-      <span>{value}</span></li>
-      {/each}
-      <li><strong>Qi:</strong>
-      <span>{currentQi}/{character.qi.qiPoints}</span>
-      </li>
+        <li><strong>Health:</strong>
+          <span>{currHealth.c}/{baseStatsOf.health}</span>
+        </li>
+        <li><strong>Qi:</strong>
+        <span>{character.qiPoints}/{character.qiCapacity}</span>
+        </li>
+        <li><strong>Stamina:</strong>
+          <span>{currStam.c}/{baseStatsOf.stamina}</span>
+        </li>
+        <li><strong>Pyhsical Attack:</strong>
+          <span>{baseStatsOf.pAttack}</span>
+        </li>
+        <li><strong>Spiritual Attack:</strong>
+          <span>{baseStatsOf.sAttack}</span>
+        </li>
+        <li><strong>Pyhsical Defense:</strong>
+          <span>{baseStatsOf.pDef}</span>
+        </li>
+        <li><strong>Spiritual Defense:</strong>
+          <span>{baseStatsOf.sDef}</span>
+        </li>
+        <li><strong>Dodge:</strong>
+          <span>{baseStatsOf.dodge}%</span>
+        </li>
+        <li><strong>Persuasion:</strong>
+          <span>{baseStatsOf.persuasion}%</span>
+        </li>
+        <br/>
       </ul>
     </section>
   </div>
@@ -435,13 +474,22 @@
       <button onclick={resetCharacter}>🔄 Reset Character</button>
     </div>
   {/if}
+
+  
+    {#if character.age}
+    <div class="learn-cultivation" id="learn-cultivation">
+      <p>If you do not select a manual you may not get another chance!</p>
+    </div>
+    {/if}
 </main>
 
-//menus
+<!-- panels for events -->
+ 
 
-//qi-cultivation
-
+ <!-- button ui panels -->
+ 
 <style>
+
   main {
     margin: 2rem;
     padding: 2rem;
@@ -480,5 +528,17 @@
     margin-right: 1rem;
     
   }
+
+
+  /* event panels */
+  .event-panels-container > div {
+    /* display: none; */
+  }
+
+  .learn-cultivation {
+    display: flex;
+  }
+
+  /* button ui panels */
 
 </style>
