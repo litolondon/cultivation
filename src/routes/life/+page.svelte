@@ -39,12 +39,21 @@
     date: string;
   };
 
+  type ExploreHerbEventDef = {
+  name: string;
+  description: string;
+  statRequirements: Record<string, number>;
+  rewards: Record<string, number>;
+  weight: number;
+  };
+
 
   type Character = {
     name: string;
     stats: Record<string, number>;
     statsOf: Record<string, number>;
     createdAt: string;
+    spiritstones: number;
     age: number;
     lifespan: number;
     unallocatedPoints: number;
@@ -61,6 +70,7 @@
 
 
   let actionCount = 0;
+  let activeHerbWindows: { id: number, herb: ExploreHerbEventDef }[] = [];
 
   let character: Character | null = null;
   // Selected actions for the current year
@@ -146,6 +156,334 @@
     { title: 'Train the Sword', description: 'You studied your surroundings.', pointsReward: 0, good: false }
 
   ];
+
+  // Explore events
+    //Explore Herb
+const exploreHerbEvents: ExploreHerbEventDef[] = [
+  // Super Rare Qi Capacity
+  {
+    name: 'Worldroot',
+    description: 'Said to nourish the soul and body, drastically boosting qi capacity.',
+    statRequirements: { qiAffinity: 15, constitution: 15 },
+    rewards: { qiCapacityPercent: 15 },
+    weight: 0.01
+  },
+  // Super Rare Qi Points
+  {
+    name: 'Ethereal Stalk',
+    description: 'A legendary herb that brims with qi beyond mortal imagination.',
+    statRequirements: { qiAffinity: 18 },
+    rewards: { qiPoints: 500 },
+    weight: 0.01
+  },
+  
+  // Rare Herbs (Qi Affinity, Lifespan, Qi Points 300-400)
+  {
+    name: 'Spirit Grass',
+    description: 'A glowing herb known to enhance qi flow.',
+    statRequirements: { qiAffinity: 10 },
+    rewards: { qiAffinity: 1 },
+    weight: 0.05
+  },
+  {
+    name: 'Longevity Berry',
+    description: 'A berry rumored to extend one\'s lifespan.',
+    statRequirements: { constitution: 10 },
+    rewards: { lifespan: 2 },
+    weight: 0.05
+  },
+  {
+    name: 'Mindspire Blossom',
+    description: 'Elevates one\'s understanding of cultivation.',
+    statRequirements: { intelligence: 9 },
+    rewards: { qiAffinity: 1 },
+    weight: 0.05
+  },
+  {
+    name: 'Ether Fern',
+    description: 'Rare fern that refines qi flow.',
+    statRequirements: { qiAffinity: 11 },
+    rewards: { qiAffinity: 2 },
+    weight: 0.05
+  },
+  {
+    name: 'Crescent Dew',
+    description: 'Purifies the body and boosts qi.',
+    statRequirements: { qiAffinity: 11 },
+    rewards: { qiPoints: 150 },
+    weight: 0.05
+  },
+  {
+    name: 'Celestial Orchid',
+    description: 'Blooming once in a century, extends lifespan.',
+    statRequirements: { qiAffinity: 11 },
+    rewards: { lifespan: 4 },
+    weight: 0.05
+  },
+  {
+    name: 'Skycloud Sprig',
+    description: 'Said to be kissed by the heavens, brimming with dense qi.',
+    statRequirements: { qiAffinity: 12 },
+    rewards: { qiPoints: 400 },
+    weight: 0.05
+  },
+  {
+    name: 'Moonveil Herb',
+    description: 'A mysterious herb glowing under moonlight, its qi is potent.',
+    statRequirements: { qiAffinity: 11 },
+    rewards: { qiPoints: 350 },
+    weight: 0.05
+  },
+  {
+    name: 'Duskroot',
+    description: 'An elusive herb found at dusk, containing strong qi essence.',
+    statRequirements: { qiAffinity: 12 },
+    rewards: { qiPoints: 300 },
+    weight: 0.05
+  },
+  {
+    name: 'Dawnroot Ginseng',
+    description: 'A sacred herb that subtly extends life.',
+    statRequirements: { constitution: 10 },
+    rewards: { lifespan: 2 },
+    weight: 0.05
+  },
+  {
+    name: 'Silverleaf Berry',
+    description: 'Grants those who consume it a chance to lengthen their years.',
+    statRequirements: { constitution: 10 },
+    rewards: { lifespan: 3 },
+    weight: 0.05
+  },
+  {
+    name: 'Pine of Longevity',
+    description: 'A rare pine that fortifies the body, extending lifespan.',
+    statRequirements: { constitution: 9 },
+    rewards: { lifespan: 2 },
+    weight: 0.05
+  },
+  
+  // Common Herbs (Qi Points 100-200, Stats)
+  {
+    name: 'Ironroot Lotus',
+    description: 'Strengthens the body like iron.',
+    statRequirements: { strength: 8 },
+    rewards: { strength: 2 },
+    weight: 0.3
+  },
+  {
+    name: 'Veilflower',
+    description: 'Sharpens the mind.',
+    statRequirements: { intelligence: 8 },
+    rewards: { intelligence: 2 },
+    weight: 0.2
+  },
+  {
+    name: 'Shadow Moss',
+    description: 'Cultivates stealth and perception.',
+    statRequirements: { luck: 6 },
+    rewards: { luck: 2 },
+    weight: 0.2
+  },
+  {
+    name: 'Heartleaf Orchid',
+    description: 'Improves resilience.',
+    statRequirements: { constitution: 7 },
+    rewards: { constitution: 2 },
+    weight: 0.15
+  },
+  {
+    name: 'Burning Reed',
+    description: 'Enhances strength.',
+    statRequirements: { strength: 9 },
+    rewards: { strength: 3 },
+    weight: 0.2
+  },
+  {
+    name: 'Skyvine',
+    description: 'Boosts agility and awareness.',
+    statRequirements: { luck: 8 },
+    rewards: { luck: 3 },
+    weight: 0.15
+  },
+  {
+    name: 'Ghost Petal',
+    description: 'Slightly extends lifespan.',
+    statRequirements: { constitution: 9 },
+    rewards: { lifespan: 1 },
+    weight: 0.05
+  },
+  {
+    name: 'Stonebark Root',
+    description: 'Hardens the body.',
+    statRequirements: { strength: 8 },
+    rewards: { constitution: 2 },
+    weight: 0.15
+  },
+  {
+    name: 'Silent Sprout',
+    description: 'Enhances patience.',
+    statRequirements: { intelligence: 7 },
+    rewards: { intelligence: 1 },
+    weight: 0.15
+  },
+  {
+    name: 'Dragonroot',
+    description: 'Grants raw power.',
+    statRequirements: { strength: 9 },
+    rewards: { strength: 4 },
+    weight: 0.1
+  },
+  {
+    name: 'Mistleaf',
+    description: 'Slightly extends lifespan.',
+    statRequirements: { constitution: 9 },
+    rewards: { lifespan: 1 },
+    weight: 0.05
+  },
+  {
+    name: 'Wraith Vine',
+    description: 'Boosts luck.',
+    statRequirements: { luck: 8 },
+    rewards: { luck: 2 },
+    weight: 0.1
+  },
+  {
+    name: 'Azure Leaf',
+    description: 'Stimulates qi circulation.',
+    statRequirements: { qiAffinity: 8 },
+    rewards: { qiPoints: 100 },
+    weight: 0.1
+  },
+  {
+    name: 'Emerald Grass',
+    description: 'Strengthens luck and constitution.',
+    statRequirements: { luck: 7, constitution: 7 },
+    rewards: { luck: 1, constitution: 1 },
+    weight: 0.2
+  },
+  {
+    name: 'Stormroot',
+    description: 'A volatile herb that boosts strength.',
+    statRequirements: { strength: 9 },
+    rewards: { strength: 3 },
+    weight: 0.15
+  },
+  {
+    name: 'Echo Lotus',
+    description: 'Refines the user’s intelligence.',
+    statRequirements: { intelligence: 8 },
+    rewards: { intelligence: 2 },
+    weight: 0.15
+  },
+  {
+    name: 'Hidden Fern',
+    description: 'Increases perception and luck.',
+    statRequirements: { luck: 7 },
+    rewards: { luck: 2 },
+    weight: 0.1
+  },
+  {
+    name: 'Qi Drift Mushroom',
+    description: 'Exudes qi, enhancing qi points.',
+    statRequirements: { qiAffinity: 7 },
+    rewards: { qiPoints: 120 },
+    weight: 0.1
+  },
+  {
+    name: 'Ember Lily',
+    description: 'Sparks intense physical power.',
+    statRequirements: { strength: 9 },
+    rewards: { strength: 4 },
+    weight: 0.1
+  },
+  {
+    name: 'Dreamvine',
+    description: 'Brings clarity of thought.',
+    statRequirements: { intelligence: 9 },
+    rewards: { intelligence: 3 },
+    weight: 0.1
+  },
+  // New Qi Point focused herbs (100-200)
+  {
+    name: 'Windbloom',
+    description: 'A gentle herb that softly pulses with qi.',
+    statRequirements: { qiAffinity: 8 },
+    rewards: { qiPoints: 150 },
+    weight: 0.2
+  },
+  {
+    name: 'Mist Petal',
+    description: 'A common herb that refines one’s qi.',
+    statRequirements: { qiAffinity: 6 },
+    rewards: { qiPoints: 100 },
+    weight: 0.2
+  },
+  {
+    name: 'Clearroot',
+    description: 'Commonly used by disciples to boost qi.',
+    statRequirements: { qiAffinity: 5 },
+    rewards: { qiPoints: 100 },
+    weight: 0.2
+  },
+  {
+    name: 'Blazeleaf',
+    description: 'Provides a quick burst of qi energy.',
+    statRequirements: { qiAffinity: 7 },
+    rewards: { qiPoints: 150 },
+    weight: 0.2
+  },
+  {
+    name: 'Soothing Vine',
+    description: 'Calms the body and gently enhances qi flow.',
+    statRequirements: { qiAffinity: 8 },
+    rewards: { qiPoints: 200 },
+    weight: 0.2
+  },
+  {
+    name: 'Whispering Bloom',
+    description: 'Whispers to the cultivator’s soul, refining qi mildly.',
+    statRequirements: { qiAffinity: 7 },
+    rewards: { qiPoints: 180 },
+    weight: 0.2
+  },
+  {
+    name: 'Glowcap Mushroom',
+    description: 'A glowing fungus that seeps qi.',
+    statRequirements: { qiAffinity: 6 },
+    rewards: { qiPoints: 120 },
+    weight: 0.2
+  },
+  {
+    name: 'Sunpetal',
+    description: 'Radiates warmth and qi.',
+    statRequirements: { qiAffinity: 8 },
+    rewards: { qiPoints: 200 },
+    weight: 0.2
+  },
+  {
+    name: 'Aurora Grass',
+    description: 'Colorful grass that amplifies qi.',
+    statRequirements: { qiAffinity: 9 },
+    rewards: { qiPoints: 180 },
+    weight: 0.2
+  },
+  {
+    name: 'Rainleaf',
+    description: 'Its qi is crisp and energizing.',
+    statRequirements: { qiAffinity: 9 },
+    rewards: { qiPoints: 200 },
+    weight: 0.2
+  },
+  {
+    name: 'Fogseed',
+    description: 'Hidden in fog, moderately boosts qi.',
+    statRequirements: { qiAffinity: 9 },
+    rewards: { qiPoints: 190 },
+    weight: 0.2
+  }
+];
+
 
   // Choose up to 3 actions per year
     // Choose up to 3 actions per year (duplicates allowed)
@@ -468,6 +806,33 @@ function tryBreakthroughGoldenCore() {
         character.qiPoints = character.qiCapacity;
       }
       break;
+
+    case 'Explore':
+      const eRoll = Math.random() * 100;
+
+      if (character.stage[1]) {
+        if (eRoll >= 0) {
+          //herb
+          triggerHerbEvent();
+        } else if ((eRoll >= 20) && (eRoll < 85)) {
+          //battle
+
+
+        } else if ((eRoll >= 30) && (eRoll < 35)) {
+          //encounter
+          
+        } else {
+          //nothing
+        }
+        
+      } else if (character.stage[2]) {
+
+      } else if (character.stage[3]) {
+
+      } else if (character.stage[4]) {
+
+      }
+      break;
   }
 
   character.lifeEvents.push({
@@ -568,6 +933,7 @@ function tryBreakthroughGoldenCore() {
     }
     character = JSON.parse(stored);
     character.age ??= 0;
+    character.spiritstones ??= 0;
     character.unallocatedPoints ??= 0;
     character.qiPoints ??= 0;
     character.usedStam  ??= 0;
@@ -661,6 +1027,70 @@ function tryBreakthroughGoldenCore() {
     character.manuals = [...existing, newManual];
 
     document.getElementById( 'basic-qi-manual-button' ).style.display = 'none'
+  }
+
+  //herb function
+  function weightedPickHerb(pool: ExploreHerbEventDef[]): ExploreHerbEventDef {
+  const totalWeight = pool.reduce((sum, e) => sum + e.weight, 0);
+  let r = Math.random() * totalWeight;
+  for (const e of pool) {
+    r -= e.weight;
+    if (r <= 0) return e;
+  }
+  return pool[pool.length - 1];
+  }
+
+  function canCollectHerb(herb: ExploreHerbEventDef): boolean {
+  return Object.entries(herb.statRequirements).every(
+    ([stat, req]) => (character.stats[stat] ?? 0) >= req
+  );
+  }
+
+  function collectHerb(windowId: number) {
+    const window = activeHerbWindows.find(w => w.id === windowId);
+    if (!window) return;
+
+    // Apply rewards
+    for (const [stat, value] of Object.entries(window.herb.rewards)) {
+      if (stat === 'qiCapacityPercent') {
+        character.qiCapacity = Math.floor(character.qiCapacity * (1 + value / 100));
+      } else if (stat in character.stats) {
+        character.stats[stat] += value;
+      } else if (stat === 'qiPoints') {
+        character.qiPoints += value;
+      }
+    }
+
+    // Add life event
+    character.lifeEvents.push({
+      id: Date.now(),
+      title: `Age ${character.age}: Collected ${window.herb.name}`,
+      description: `You successfully collected the ${window.herb.name}. ${window.herb.description}`,
+      date: new Date().toISOString()
+    });
+
+    activeHerbWindows = activeHerbWindows.filter(w => w.id !== windowId);
+    saveCharacter();
+  }
+
+  function giveUpHerb(windowId: number) {
+    const window = activeHerbWindows.find(w => w.id === windowId);
+    if (!window) return;
+
+    character.lifeEvents.push({
+      id: Date.now(),
+      title: `Age ${character.age}: Gave up ${window.herb.name}`,
+      description: `You chose to leave the ${window.herb.name} untouched.`,
+      date: new Date().toISOString()
+    });
+
+    activeHerbWindows = activeHerbWindows.filter(w => w.id !== windowId);
+    saveCharacter();
+  }
+
+  function triggerHerbEvent() {
+    const herb = weightedPickHerb(exploreHerbEvents);
+    activeHerbWindows = [...activeHerbWindows, { id: Date.now() + Math.random(), herb }];
   }
 </script>
 
@@ -855,6 +1285,21 @@ function tryBreakthroughGoldenCore() {
       <button popovertarget="manuals">Exit</button>
     </div>
   {/if}
+
+  {#each activeHerbWindows as window (window.id)}
+  <div class="herb-window">
+    <h2>Age {character.age}: {window.herb.name}</h2>
+    <p>{window.herb.description}</p>
+    <h3>Stat Requirements:</h3>
+    <ul>
+      {#each Object.entries(window.herb.statRequirements) as [stat, req]}
+        <li>{stat}: {character.stats[stat] ?? 0} / {req}</li>
+      {/each}
+    </ul>
+    <button onclick={() => collectHerb(window.id)} disabled={!canCollectHerb(window.herb)}>Collect</button>
+    <button onclick={() => giveUpHerb(window.id)}>Give Up</button>
+  </div>
+{/each}
 </main>
 
 <!-- panels for events -->
@@ -919,4 +1364,15 @@ function tryBreakthroughGoldenCore() {
   }
 
   /* button ui panels */
+  .herb-window {
+  position: fixed;
+  top: 20%;
+  left: 20%;
+  width: 60%;
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
 </style>
