@@ -1118,123 +1118,123 @@
       break;
     case 'Train Meridians':
       if (roll <= 30){
-        character.qiCapacity += character.stats.qiAffinity * 0.8 * realmNumber;
+        character.qiCapacity += Math.round(getEffectiveStat('qiAffinity')) * 0.8 * realmNumber;
       } else if ((roll <= 95) && (roll > 30)) {
-        character.qiCapacity += character.stats.qiAffinity * 1.2 * realmNumber;
+        character.qiCapacity += Math.round(getEffectiveStat('qiAffinity')) * 1.2 * realmNumber;
       } else if ((roll <= 100) && (roll > 95)) {
-        character.qiCapacity += character.stats.qiAffinity * 2 * realmNumber;
+        character.qiCapacity += Math.round(getEffectiveStat('qiAffinity')) * 2 * realmNumber;
       }
 
       break;
       
    case 'Gather Qi':
-  if (equippedManual === "Grassroots Breathing Art") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.3 * realmNumber);
+    if (equippedManual === "Grassroots Breathing Art") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.3 * realmNumber);
 
-  } else if (equippedManual === "Wealth-Backed Qi Method") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.5 * (realmNumber + 1));
+    } else if (equippedManual === "Wealth-Backed Qi Method") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.5 * (realmNumber + 1));
 
-  } else if (equippedManual === "Celestial Foundation Sutra") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
+    } else if (equippedManual === "Celestial Foundation Sutra") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
 
-  } else if (equippedManual === "Flowing River Method") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.5 * realmNumber);
+    } else if (equippedManual === "Flowing River Method") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.5 * realmNumber);
 
-  } else if (equippedManual === "Mountain Iron Scripture") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.7 * realmNumber);
-    character.qiPoints += Math.round(getEffectiveStat('constitution') * 0.5);
+    } else if (equippedManual === "Mountain Iron Scripture") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.7 * realmNumber);
+      character.qiPoints += Math.round(getEffectiveStat('constitution') * 0.5);
 
-  } else if (equippedManual === "Celestial Pure Heart Sutra") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 2.2 * realmNumber);
-    character.qiPoints += Math.round(getEffectiveStat('intelligence') * 0.7);
+    } else if (equippedManual === "Celestial Pure Heart Sutra") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 2.2 * realmNumber);
+      character.qiPoints += Math.round(getEffectiveStat('intelligence') * 0.7);
 
-  } else if (equippedManual === "Blood Thorn Chant") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.9 * realmNumber);
-    character.lostHealth += 5;
+    } else if (equippedManual === "Blood Thorn Chant") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.9 * realmNumber);
+      character.lostHealth += 5;
 
-  } else if (equippedManual === "Bone Whispering Method") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
-    character.stats.constitution = Math.max(1, Math.floor(getEffectiveStat('constitution') * 0.9));
+    } else if (equippedManual === "Bone Whispering Method") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
+      character.stats.constitution = Math.max(1, Math.floor(getEffectiveStat('constitution') * 0.9));
 
-  } else if (equippedManual === "Demon Emperor Scripture") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 2.5 * realmNumber);
-    character.qiPoints += Math.round(getEffectiveStat('strength') * 0.5);
-    character.lostHealth += 10;
+    } else if (equippedManual === "Demon Emperor Scripture") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 2.5 * realmNumber);
+      character.qiPoints += Math.round(getEffectiveStat('strength') * 0.5);
+      character.lostHealth += 10;
 
-  } else if (equippedManual === "Sky Immortal Sutra") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 3 * realmNumber);
-    character.qiPoints += Math.round(getEffectiveStat('intelligence') * 0.9);
+    } else if (equippedManual === "Sky Immortal Sutra") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 3 * realmNumber);
+      character.qiPoints += Math.round(getEffectiveStat('intelligence') * 0.9);
 
-  } else if (equippedTreasure === "Rustling Bamboo Sword") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
+    } else if (equippedTreasure === "Rustling Bamboo Sword") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
 
-  } else if (equippedTreasure === "Cloud Drizzle Sword") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.3 * realmNumber);
+    } else if (equippedTreasure === "Cloud Drizzle Sword") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.3 * realmNumber);
 
-  } else if (equippedTreasure === "Emerald Fang Sword") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.25 * realmNumber);
+    } else if (equippedTreasure === "Emerald Fang Sword") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.25 * realmNumber);
 
-  } else if (equippedTreasure === "Tiger Roar Sword") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.7 * realmNumber);
-    character.usedStam += 5;
+    } else if (equippedTreasure === "Tiger Roar Sword") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.7 * realmNumber);
+      character.usedStam += 5;
 
-  } else if (equippedTreasure === "Celestial Phoenix Blade") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 2.5 * realmNumber);
-    character.qiPoints += Math.round(getEffectiveStat('intelligence') * 0.5);
+    } else if (equippedTreasure === "Celestial Phoenix Blade") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 2.5 * realmNumber);
+      character.qiPoints += Math.round(getEffectiveStat('intelligence') * 0.5);
 
-  } else if (equippedTreasure === "Nine Heavens Mirror") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 2.5 * realmNumber);
-    character.qiPoints += Math.round(getEffectiveStat('luck') * 0.5);
+    } else if (equippedTreasure === "Nine Heavens Mirror") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 2.5 * realmNumber);
+      character.qiPoints += Math.round(getEffectiveStat('luck') * 0.5);
 
-  } else if (equippedTreasure === "Void Suppressing Bell") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 2.4 * realmNumber);
+    } else if (equippedTreasure === "Void Suppressing Bell") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 2.4 * realmNumber);
 
-  } else if (equippedTreasure === "Dragon Coiling Banner") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
+    } else if (equippedTreasure === "Dragon Coiling Banner") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
 
-  } else if (equippedTreasure === "Soul Shaking Gong") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
-    character.qiPoints += Math.round(getEffectiveStat('luck') * 0.2);
+    } else if (equippedTreasure === "Soul Shaking Gong") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
+      character.qiPoints += Math.round(getEffectiveStat('luck') * 0.2);
 
-  } else if (equippedTreasure === "Spirit Guard Talisman") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
+    } else if (equippedTreasure === "Spirit Guard Talisman") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
 
-  } else if (equippedTreasure === "Blazing Fire Banner") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
-    character.qiPoints += Math.round(getEffectiveStat('strength') * 0.3);
+    } else if (equippedTreasure === "Blazing Fire Banner") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
+      character.qiPoints += Math.round(getEffectiveStat('strength') * 0.3);
 
-  } else if (equippedTreasure === "Reflecting Mist Mirror") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
+    } else if (equippedTreasure === "Reflecting Mist Mirror") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
 
-  } else if (equippedTreasure === "Stone Chime Bell") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
+    } else if (equippedTreasure === "Stone Chime Bell") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
 
-  } else if (equippedTreasure === "Amber Seal") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
+    } else if (equippedTreasure === "Amber Seal") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
 
-  } else if (equippedTreasure === "Wood Spirit Drum") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
-    character.qiPoints += Math.round(getEffectiveStat('strength') * 0.1);
+    } else if (equippedTreasure === "Wood Spirit Drum") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
+      character.qiPoints += Math.round(getEffectiveStat('strength') * 0.1);
 
-  } else if (equippedTreasure === "Silk Binding Banner") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
+    } else if (equippedTreasure === "Silk Binding Banner") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
 
-  } else if (equippedTreasure === "Moonlight Reflecting Flag") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
+    } else if (equippedTreasure === "Moonlight Reflecting Flag") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
 
-  } else if (equippedTreasure === "Iron Whisper Talisman") {
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
-    character.qiPoints += Math.round(getEffectiveStat('intelligence') * 0.1);
+    } else if (equippedTreasure === "Iron Whisper Talisman") {
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
+      character.qiPoints += Math.round(getEffectiveStat('intelligence') * 0.1);
 
-  } else {
-    // No bonuses applied (default fallback)
-    character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.0 * realmNumber);
-  }
+    } else {
+      // No bonuses applied (default fallback)
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.0 * realmNumber);
+    }
 
-  // Ensure not over capacity
-  if (character.qiPoints >= character.qiCapacity) {
-    character.qiPoints = character.qiCapacity;
-  }
+    // Ensure not over capacity
+    if (character.qiPoints >= character.qiCapacity) {
+      character.qiPoints = character.qiCapacity;
+    }
   break;
 
 
@@ -1672,9 +1672,9 @@
       stamina: Math.round(((getEffectiveStat('constitution') + getEffectiveStat('dexterity')) / 2) * realmNumber),
       dodge: ((((getEffectiveStat('dexterity') / 8) * realmNumber) / 2) / 1000).toFixed(2),
       pAttack: Math.round(getEffectiveStat('strength') * 2 * realmNumber),
-      sAttack: Math.round((getEffectiveStat('qiAffinity') + getEffectiveStat('intelligence') / 2) * (character.qiPoints * 0.005)),
+      sAttack: Math.round((getEffectiveStat('qiAffinity') + getEffectiveStat('intelligence') / 2) + (character.qiPoints * 0.005) * realmNumber),
       pDef: Math.round(((getEffectiveStat('strength') + getEffectiveStat('constitution')) * 1.5) * realmNumber),
-      sDef: Math.round(((getEffectiveStat('qiAffinity') + getEffectiveStat('intelligence')) * 1.5) * realmNumber),
+      sDef: Math.round(((getEffectiveStat('qiAffinity') + (getEffectiveStat('intelligence') / 4) + (getEffectiveStat('constitution') / 4)) + (character.qiPoints * 0.005)) * (realmNumber / 2)),
       persuasion: ((((getEffectiveStat('charisma') / 4) * realmNumber) / 2) / 1000).toFixed(2),
     }
   : {
@@ -1731,70 +1731,75 @@
       {/if}
 
       <section class="stats">
-          <h3>Attributes</h3>
-          <ul>
-            {#each Object.entries(character.stats) as [key, baseValue]}
+        <div>
+            <h3>Attributes</h3>
+            <ul>
+              {#each Object.entries(character.stats) as [key, baseValue]}
+                <li>
+                  <strong>
+                    {key.charAt(0).toUpperCase() + key.slice(1)}:
+                  </strong>
+                  <span>
+                    {baseValue}
+                    {#if character.addedStats?.[key] > 0}
+                      <span style="color: green;"> (+{character.addedStats[key]})</span>
+                    {/if}
+                    {#if character.addedStats?.[key] < 0}
+                      <span style="color: red;"> ({character.addedStats[key]})</span>
+                    {/if}
+                  </span>
+                  {#if character.unallocatedPoints > 0}
+                    <button type="button" onclick={() => allocatePoint(key)}>
+                      +1
+                    </button>
+                  {/if}
+                </li>
+              {/each}
+            </ul>
+          </div>
+          
+          <div>
+            <h3>Stats</h3>
+            <ul>
               <li>
-                <strong>
-                  {key.charAt(0).toUpperCase() + key.slice(1)}:
-                </strong>
-                <span>
-                  {baseValue}
-                  {#if character.addedStats?.[key] > 0}
-                    <span style="color: green;"> (+{character.addedStats[key]})</span>
-                  {/if}
-                  {#if character.addedStats?.[key] < 0}
-                    <span style="color: red;"> ({character.addedStats[key]})</span>
-                  {/if}
-                </span>
-                {#if character.unallocatedPoints > 0}
-                  <button type="button" onclick={() => allocatePoint(key)}>
-                    +1
-                  </button>
-                {/if}
+                <strong>Health:</strong>
+                <span>{currHealth.c}/{baseStatsOf.health}</span>
               </li>
-            {/each}
-          </ul>
-          <h3>Stats</h3>
-          <ul>
-            <li>
-              <strong>Health:</strong>
-              <span>{currHealth.c}/{baseStatsOf.health}</span>
-            </li>
-            <li>
-              <strong>Qi:</strong>
-              <span>{Math.round(character.qiPoints)}/{Math.round(character.qiCapacity)}</span>
-            </li>
-            <li>
-              <strong>Stamina:</strong>
-              <span>{currStam.c}/{baseStatsOf.stamina}</span>
-            </li>
-            <li>
-              <strong>Pyhsical Attack:</strong>
-              <span>{baseStatsOf.pAttack}</span>
-            </li>
-            <li>
-              <strong>Spiritual Attack:</strong>
-              <span>{baseStatsOf.sAttack}</span>
-            </li>
-            <li>
-              <strong>Pyhsical Defense:</strong>
-              <span>{baseStatsOf.pDef}</span>
-            </li>
-            <li>
-              <strong>Spiritual Defense:</strong>
-              <span>{baseStatsOf.sDef}</span>
-            </li>
-            <li>
-              <strong>Dodge:</strong>
-              <span>{baseStatsOf.dodge}%</span>
-            </li>
-            <li>
-              <strong>Persuasion:</strong>
-              <span>{baseStatsOf.persuasion}%</span>
-            </li>
-            <br />
-          </ul>
+              <li>
+                <strong>Qi:</strong>
+                <span>{Math.round(character.qiPoints)}/{Math.round(character.qiCapacity)}</span>
+              </li>
+              <li>
+                <strong>Stamina:</strong>
+                <span>{currStam.c}/{baseStatsOf.stamina}</span>
+              </li>
+              <li>
+                <strong>Pyhsical Attack:</strong>
+                <span>{baseStatsOf.pAttack}</span>
+              </li>
+              <li>
+                <strong>Spiritual Attack:</strong>
+                <span>{baseStatsOf.sAttack}</span>
+              </li>
+              <li>
+                <strong>Pyhsical Defense:</strong>
+                <span>{baseStatsOf.pDef}</span>
+              </li>
+              <li>
+                <strong>Spiritual Defense:</strong>
+                <span>{baseStatsOf.sDef}</span>
+              </li>
+              <li>
+                <strong>Dodge:</strong>
+                <span>{baseStatsOf.dodge}%</span>
+              </li>
+              <li>
+                <strong>Persuasion:</strong>
+                <span>{baseStatsOf.persuasion}%</span>
+              </li>
+              <br />
+            </ul>
+          </div>
         </section>
     </div>
 
@@ -2095,5 +2100,10 @@
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   z-index: 1000;
+}
+
+.stats {
+  display: flex;
+  flex-direction: row;
 }
 </style>
