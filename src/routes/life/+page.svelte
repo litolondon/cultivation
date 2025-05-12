@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import type { NumberLiteralType } from 'typescript';
+  import { isTemplateMiddleOrTemplateTail } from 'typescript';
+ 
 
   // Structure for life events awarding spendable points
   type LifeEventDef = {
@@ -9,10 +10,27 @@
     description: string;
     pointsReward: number;
     optional?: boolean;
-    ageTrigger?: number; // for chronological events
-    weight?: number;      // probability weight
-    good?: boolean;       // classify as good or bad
+    ageTrigger?: number; 
+    weight?: number;     
+    good?: boolean;       
   };
+
+  type Manual = {
+    title: string;
+    equipped: boolean;
+    method: string;
+    methodInfo: string;
+  };
+
+  type Body = {
+    grade: string;
+    description: string;
+  }
+
+  type Core = {
+    grade: number;
+    description: string;
+  }
 
   type LifeEvent = {
     id: number;
@@ -21,7 +39,7 @@
     date: string;
   };
 
-  // Character with unallocated points pool and breakthrough tracking
+
   type Character = {
     name: string;
     stats: Record<string, number>;
@@ -36,8 +54,13 @@
     qiCapacity: number;
     usedStam: number;
     lostHealth: number;
+    manuals: Manual[]
+    body: Body;
+    core: Core;
   };
 
+
+  let actionCount = 0;
 
   let character: Character | null = null;
   // Selected actions for the current year
@@ -115,7 +138,7 @@
     { title: 'Observe', description: 'You studied your surroundings.', pointsReward: 0, good: false },  
   ];
 
-  const actionEvents5to14: LifeEventDef[] = [
+  const actionEvents5Up: LifeEventDef[] = [
     { title: 'Train Meridians', description: 'You let your imagination run wild.', pointsReward: 0, good: false },
     { title: 'Gather Qi', description: 'You played joyfully.', pointsReward: 0, good: true },
     { title: 'Explore', description: 'You studied your surroundings.', pointsReward: 0, good: false },
@@ -143,21 +166,16 @@
   }
 
   // Check and apply breakthrough when Qi threshold reached
-  function tryBreakthrough() {
-    if (!character) return;
-    if (character.qiPoints >= 1000 && !character.stage) {
-      const event: LifeEvent = {
-        id: Date.now(),
-        title: `Age ${character.age}: Foundation Establishment`,
-        description: 'You have laid the foundation for your cultivation.',
-        date: new Date().toISOString()
-      };
-      character.lifeEvents.push(event);
-      saveCharacter();
-    }
-  }
+  
 
   
+
+  $: equippedManual = character?.manuals
+    ? character.manuals.find(m => m.equipped)?.title ?? 'None'
+    : 'No Manual Eqipped';
+  $: equippedManualMethod = character?.manuals
+    ? character.manuals.find(m => m.equipped)?.method ?? 'None'
+    : 'No Manual Eqipped';
 
   // Allocate unallocated points to stats
   function allocatePoint(key: keyof Character['stats']) {
@@ -202,6 +220,26 @@
         character.stats.luck += 2;
       }
       break;
+    case 'Train Meridians':
+      if (roll <= 30){
+        character.qiCapacity += character.stats.qiAffinity * 0.8 * realmNumber;
+      } else if ((roll <= 95) && (roll > 30)) {
+        character.qiCapacity += character.stats.qiAffinity * 1.2 * realmNumber;
+      } else if ((roll <= 100) && (roll > 95)) {
+        character.qiCapacity += character.stats.qiAffinity * 2 * realmNumber;
+      }
+
+      break;
+      
+    case 'Gather Qi':
+      if (equippedManual === "Basic Qi Manual"){
+        character.qiPoints += Math.round(character.stats.qiAffinity * 1.5 * realmNumber);
+      }
+      if (character.qiPoints >= character.qiCapacity){
+        character.qiPoints = character.qiCapacity;
+      }
+    
+      break;
   }
 
   character.lifeEvents.push({
@@ -226,15 +264,19 @@
   function rand(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
-
+  
+   
   // Advance one year and award points
   function advanceYear() {
     if (!character) return;
     character.age++;
 
+    
+
     character.stats.lifespan--;
     // apply selected actions
     selectedActions.forEach(def => performAction(def));
+    
     // clear after applying
     selectedActions = [];
 
@@ -269,8 +311,12 @@
         date: new Date().toISOString()
       });
     });
+
+    character.lostHealth -= (baseStatsOf.health / 5);
+    if (character.lostHealth < 0) {
+      character.lostHealth = 0;
+    } 
     saveCharacter();
-    tryBreakthrough();
     selectedActions = [];
   }
 
@@ -280,6 +326,8 @@
       goto('/');
     }
   }
+
+
 
   onMount(() => {
     const stored = localStorage.getItem('cultivationCharacter');
@@ -296,7 +344,6 @@
     character.lostHealth ??= 0;
     if (!Array.isArray(character.stage) || character.stage.length !== 12) {
     character.stage = Array(12).fill(false);
-    character.stage[1] = true;
 
     }
     if (!character.lifeEvents || character.lifeEvents.length === 0) {
@@ -304,11 +351,15 @@
       character.lifeEvents = [birth];
       saveCharacter();
     }
+    if (character.manuals.length < 1){
+      character.manuals = []
+    }
   });
 
+
+
   $: realmNumber = character
-  ? character.stage.findIndex(flag => flag === true)
-  : 0;
+  ? character.stage.findIndex(flag => flag === true) : 0;
 
   $: baseStatsOf = character
   ? {
@@ -319,7 +370,7 @@
       ((((character.stats.dexterity / 8) * realmNumber) / 2) / 1000).toFixed(2),
       pAttack: Math.round(character.stats.strength * 2 * realmNumber),
       sAttack:
-        Math.round((character.stats.qiAffinity + character.stats.intelligence / 2) * (character.qiPoints * 0.05)),
+        Math.round((character.stats.qiAffinity + character.stats.intelligence / 2) * (character.qiPoints * 0.005)),
       pDef: Math.round(((character.stats.strength + character.stats.constitution) * 1.5) * realmNumber),
       sDef: Math.round(((character.stats.qiAffinity + character.stats.intelligence) * 1.5) * realmNumber),
       persuasion: ((((character.stats.charisma / 4) * realmNumber) / 2) / 1000).toFixed(2),
@@ -352,69 +403,348 @@
   : {
     c: baseStatsOf.health
   }
+
+  
+  function tryBreakthroughQiRef() {
+  if (!character) return;
+  if (character.qiPoints < 500 || !character.stage[1]) return;
+
+  const roll = Math.random() * 100;
+  let isBreak = false;
+  const qi = character.qiPoints;
+  const cap = character.qiCapacity;
+
+  function setBodyLifespanPoints() {
+    if (cap >= 1050) {
+      character.unallocatedPoints += 8;
+      character.stats.constitution += 3;
+      character.qiCapacity *= 1.3;
+      character.stats.lifespan  += 15;
+    } else if (cap > 750) {
+      character.unallocatedPoints += 5;
+      character.stats.constitution += 2;
+      character.qiCapacity *= 1.18;
+      character.stats.lifespan  += 10;
+    } else {
+      character.unallocatedPoints += 5;
+      character.stats.constitution += 2;
+      character.qiCapacity *= 1.09;
+      character.stats.lifespan  += 5;
+      
+    }
+  }
+
+  if (cap === qi) {
+    if (roll >= 5) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 50); 
+    }
+  } else if ((qi >= (3 * (cap / 4))) && (qi < cap)) {
+    if (roll <= 35) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 65);
+    }
+  } else if ((qi < (3 * (cap / 4))) && (qi >=  (cap / 2))) {
+    if (roll <= 10) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 95);
+    }
+  }
+
+  const result = {
+    id: Date.now(),
+    title: isBreak ? `Age ${character.age}: Qi Refinement Breakthrough: Success` : `Age ${character.age}: Qi Refinement Breakthrough: Failed`,
+    description: isBreak
+      ? `You have laid the Qi Refinement for your cultivation.`
+      : 'You failed to reach Qi Refinement',
+    date: new Date().toISOString()
+  };
+
+  character.lifeEvents.push(result);
+  
+  if (isBreak) {
+    character.stage[1] = false;
+    character.stage[2] = true;
+    isBreak = false;
+  }
+  
+
+  saveCharacter();
+}
+
+function tryBreakthroughFoundation() {
+  if (!character) return;
+  if (character.qiPoints < 1500 || !character.stage[2]) return;
+
+  const roll = Math.random() * 100;
+  let isBreak = false;
+  const qi = character.qiPoints;
+  const cap = character.qiCapacity;
+
+  function setBodyLifespanPoints() {
+    if (cap >= 3000) {
+      character.unallocatedPoints += 12;
+      character.stats.constitution += 9;
+      character.qiCapacity *= 1.5;
+      character.body = { grade: "Heaven", description: "The heavens have decided your home." };
+      character.stats.lifespan  += 20;
+    } else if (cap > 2250) {
+      character.unallocatedPoints += 9;
+      character.stats.constitution += 6;
+      character.qiCapacity *= 1.3;
+      character.body = { grade: "Earth", description: "The world belongs to some." };
+      character.stats.lifespan  += 15;
+    } else {
+      character.unallocatedPoints += 6;
+      character.stats.constitution += 3;
+      character.qiCapacity *= 1.15;
+      character.body = { grade: "Mortal", description: "Many will walk the path of the mortal" };
+      character.stats.lifespan  += 10;
+      
+    }
+  }
+
+  if (cap === qi) {
+    if (roll >= 5) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 50); 
+    }
+  } else if ((qi >= (3 * (cap / 4))) && (qi < cap)) {
+    if (roll <= 35) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 65);
+    }
+  } else if ((qi < (3 * (cap / 4))) && (qi >=  (cap / 2))) {
+    if (roll <= 10) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 95);
+    }
+  }
+
+  const result = {
+    id: Date.now(),
+    title: isBreak ? `Age ${character.age}: Foundation Establishment: Success` : `Age ${character.age}: Foundation Establishment: Failed`,
+    description: isBreak
+      ? `You have laid the Foundation Establishment for your cultivation. You have a ${character.body.grade} grade body.`
+      : 'You failed to establish your foundation.',
+    date: new Date().toISOString()
+  };
+
+  character.lifeEvents.push(result);
+  if (isBreak) {
+    character.stage[2] = false;
+    character.stage[3] = true;
+    isBreak = false;
+  }
+
+  saveCharacter();
+}
+
+function tryBreakthroughGoldenCore() {
+  if (!character) return;
+  if (character.qiPoints < 7500 || !character.stage[3]) return;
+
+  const roll = Math.random() * 100;
+  let isBreak = false;
+  const qi = character.qiPoints;
+  const cap = character.qiCapacity;
+
+  function setBodyLifespanPoints() {
+    if (cap >= 15000) {
+      character.unallocatedPoints += 15;
+      character.stats.constitution += 12;
+      character.qiCapacity *= 1.8;
+      character.core = { grade: 1, description: "A divine golden core forms, resonating with the laws of the cosmos themselves." };
+      character.stats.lifespan  += 20;
+    } else if (cap >= 12000){
+      character.unallocatedPoints += 12;
+      character.stats.constitution += 10;
+      character.qiCapacity *= 1.55;
+      character.core = { grade: 2, description: "Your golden core shines like a star, drawing the gaze of celestial beings." };
+      character.stats.lifespan  += 20;
+    } else if (cap >= 9750) {
+      character.unallocatedPoints += 9;
+      character.stats.constitution += 8;
+      character.qiCapacity *= 1.30;
+      character.core = { grade: 3, description: "An exceptional golden core forms, admired among mortals and envied by lesser sects." };
+      character.stats.lifespan  += 15;
+    } else if (cap >= 8250) {
+      character.unallocatedPoints += 7;
+      character.stats.constitution += 6;
+      character.qiCapacity *= 1.15;
+      character.core = { grade: 4, description: "A stable golden core emerges, ensuring a solid future though lacking brilliance." };
+      character.stats.lifespan  += 15;
+    } else {
+      character.unallocatedPoints += 5;
+      character.stats.constitution += 3;
+      character.qiCapacity *= 1.09;
+      character.core = { grade: 5, description: "A dim golden core takes shape, common among the masses who strive but fall short of legend." };
+      character.stats.lifespan  += 10;
+    }
+  }
+
+  if (cap === qi) {
+    if (roll >= 5) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 50); 
+    }
+  } else if ((qi >= (3 * (cap / 4))) && (qi < cap)) {
+    if (roll <= 35) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 65);
+    }
+  } else if ((qi < (3 * (cap / 4))) && (qi >=  (cap / 2))) {
+    if (roll <= 10) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 95);
+    }
+  }
+
+  const result = {
+  id: Date.now(),
+  title: isBreak
+    ? `Age ${character.age}: Golden Core Formation: Success`
+    : `Age ${character.age}: Golden Core Formation: Failed`,
+  description: isBreak
+    ? `You have formed a Golden Core of Grade ${character.core.grade}. ${character.core.description}`
+    : 'Your attempt to form a Golden Core has failed, leaving your cultivation stagnant.',
+  date: new Date().toISOString()
+};
+
+  character.lifeEvents.push(result);
+  if (isBreak) {
+    character.stage[2] = false;
+    character.stage[3] = true;
+    isBreak = false;
+  }
+
+  saveCharacter();
+}
+
+    //event buttons
+  //learn-cultivation
+  // manual selection buttons
+  function exitLearnCultivation() {
+    document.getElementById( 'learn-cultivation' ).style.display = 'none';
+  }
+
+  function addBasicQiManual() {
+    const newManual: Manual = {
+      title: 'Basic Qi Manual',
+      equipped: true,
+      method: 'character.stats.qiAffinity',
+      methodInfo: 'Qi Affinity is the base, Qi is the tree, Holding the world'
+    };
+
+    // If somehow it's still undefined, fall back to []
+    const existing = Array.isArray(character.manuals)
+      ? character.manuals
+      : [];
+
+    // Spread into a new array so Svelte re‑renders
+    character.manuals = [...existing, newManual];
+
+    document.getElementById( 'basic-qi-manual-button' ).style.display = 'none'
+  }
 </script>
 
 <main>
   {#if character}
-  <div class="character-info-container">
-    <h1>🌿 Life of {character.name}</h1>
-    <p>Age: {character.age}</p>
-    <p>Realm: {realmNumber - 1}</p>
-    <p>Lifespan: {character.stats.lifespan}</p>
-    <p>Unallocated Points: {character.unallocatedPoints}</p>
+    <div class="character-info-container">
+      <h1>🌿 Life of {character.name}</h1>
+      <p>Age: {character.age}</p>
+      <p>Realm: {realmNumber - 1}</p>
+      {#if character.body}
+        <p>Body: {character.body.grade}</p>
+      {/if}
+      {#if character.core}
+        <p>Body: {character.core.grade}</p>
+      {/if}
 
-    <section class="stats">
-      <h3>Attributes</h3>
-      <ul>
+      <p>Lifespan: {character.stats.lifespan}</p>
+      <p>Unallocated Points: {character.unallocatedPoints}</p>
+      {#if character.age >= 5}
+        <p>Manual: {equippedManual}</p>
+      {/if}
 
-        {#each Object.entries(character.stats) as [key, value]}
+      <section class="stats">
+        <h3>Attributes</h3>
+        <ul>
+          {#each Object.entries(character.stats) as [key, value]}
+            <li>
+              <strong style="flex:1;">
+                {key.charAt(0).toUpperCase() + key.slice(1)}:
+              </strong>
+              <span>{value}</span>
+              {#if character.unallocatedPoints > 0}
+                <button type="button" onclick={() => allocatePoint(key)}>
+                  +1
+                </button>
+              {/if}
+            </li>
+          {/each}
+        </ul>
+
+        <h3>Stats</h3>
+        <ul>
           <li>
-            <strong style="flex:1;">
-              {key.charAt(0).toUpperCase() + key.slice(1)}:
-            </strong>
-            <span>{value}</span>
-            {#if character.unallocatedPoints > 0}
-              <button type="button" onclick={() => allocatePoint(key)}>
-                +1
-              </button>
-            {/if}
+            <strong>Health:</strong>
+            <span>{currHealth.c}/{baseStatsOf.health}</span>
           </li>
-        {/each}
-      </ul>
-
-      <h3>Stats</h3>
-      <ul>
-        <li><strong>Health:</strong>
-          <span>{currHealth.c}/{baseStatsOf.health}</span>
-        </li>
-        <li><strong>Qi:</strong>
-        <span>{character.qiPoints}/{character.qiCapacity}</span>
-        </li>
-        <li><strong>Stamina:</strong>
-          <span>{currStam.c}/{baseStatsOf.stamina}</span>
-        </li>
-        <li><strong>Pyhsical Attack:</strong>
-          <span>{baseStatsOf.pAttack}</span>
-        </li>
-        <li><strong>Spiritual Attack:</strong>
-          <span>{baseStatsOf.sAttack}</span>
-        </li>
-        <li><strong>Pyhsical Defense:</strong>
-          <span>{baseStatsOf.pDef}</span>
-        </li>
-        <li><strong>Spiritual Defense:</strong>
-          <span>{baseStatsOf.sDef}</span>
-        </li>
-        <li><strong>Dodge:</strong>
-          <span>{baseStatsOf.dodge}%</span>
-        </li>
-        <li><strong>Persuasion:</strong>
-          <span>{baseStatsOf.persuasion}%</span>
-        </li>
-        <br/>
-      </ul>
-    </section>
-  </div>
+          <li>
+            <strong>Qi:</strong>
+            <span>{Math.round(character.qiPoints)}/{Math.round(character.qiCapacity)}</span>
+          </li>
+          <li>
+            <strong>Stamina:</strong>
+            <span>{currStam.c}/{baseStatsOf.stamina}</span>
+          </li>
+          <li>
+            <strong>Pyhsical Attack:</strong>
+            <span>{baseStatsOf.pAttack}</span>
+          </li>
+          <li>
+            <strong>Spiritual Attack:</strong>
+            <span>{baseStatsOf.sAttack}</span>
+          </li>
+          <li>
+            <strong>Pyhsical Defense:</strong>
+            <span>{baseStatsOf.pDef}</span>
+          </li>
+          <li>
+            <strong>Spiritual Defense:</strong>
+            <span>{baseStatsOf.sDef}</span>
+          </li>
+          <li>
+            <strong>Dodge:</strong>
+            <span>{baseStatsOf.dodge}%</span>
+          </li>
+          <li>
+            <strong>Persuasion:</strong>
+            <span>{baseStatsOf.persuasion}%</span>
+          </li>
+          <br />
+        </ul>
+      </section>
+    </div>
 
     <section class="life-events">
       <h2>Life Events</h2>
@@ -422,7 +752,7 @@
         {#each groupedLifeEvents as item}
           <li>
             <strong>
-              {item.event.title}{item.count > 1 ? ` ×${item.count}` : ''}
+              {item.event.title}{item.count > 1 ? ` ×${item.count}` : ""}
             </strong>
             <span> - {new Date(item.event.date).toLocaleDateString()}</span>
             <p>{item.event.description}</p>
@@ -430,66 +760,108 @@
         {/each}
       </ul>
     </section>
-  <div class="main-action-container">
-    <!-- Action buttons to choose actions -->
-    <section class="actions">
-      <h2>Actions (choose up to 3)</h2>
-      <div class="actions-container">
-        {#if character.age < 5}
-        {#each actionEvents5 as act}
-          <button
-            type="button"
-            onclick={() => selectAction(act)}
-            disabled={selectedActions.length >= 3}
-          >
-            {act.title}
-          </button>
-        {/each}
-        {/if}
-      </div>
-    </section>
-     <!-- Selected actions display -->
-    <section class="selected-actions">
-      <h2>Selected Actions</h2>
-      <button type="button" onclick={clearSelectedActions} disabled={selectedActions.length === 0}>
-        Clear
-      </button>
-      <div class="selected-actions-container">
-        {#each selectedActions as act}
-          <ul>
-            <li>{act.title}</li>
-          </ul>
-        {/each}
-      </div>
-    </section>
-  </div>
-   
-    
+
+    <div class="main-action-container">
+      <!-- Action buttons to choose actions -->
+      <section class="actions">
+        <h2>Actions (choose up to 3)</h2>
+        <div class="actions-container">
+          {#if character.age < 5}
+            {#each actionEvents5 as act}
+              <button
+                type="button"
+                onclick={() => selectAction(act)}
+                disabled={selectedActions.length >= 3}
+              >
+                {act.title}
+              </button>
+            {/each}
+          {/if}
+
+          {#if character.age >= 5}
+            {#each actionEvents5Up as act}
+              <button
+                type="button"
+                onclick={() => selectAction(act)}
+                disabled={selectedActions.length >= 3}
+              >
+                {act.title}
+              </button>
+            {/each}
+          {/if}
+        </div>
+      </section>
+      <!-- Selected actions display -->
+      <section class="selected-actions">
+        <h2>Selected Actions</h2>
+        <button
+          type="button"
+          onclick={clearSelectedActions}
+          disabled={selectedActions.length === 0}
+        >
+          Clear
+        </button>
+        <div class="selected-actions-container">
+          {#each selectedActions as act}
+            <ul>
+              <li>{act.title}</li>
+            </ul>
+          {/each}
+        </div>
+      </section>
+    </div>
 
     <!-- Controls unchanged -->
     <div class="controls">
       {#if character.stats.lifespan > 0}
-      <button onclick={advanceYear}>Next Year</button>
+        <button onclick={advanceYear}>Next Year</button>
       {/if}
       <button onclick={resetCharacter}>🔄 Reset Character</button>
+      {#if character.age >= 5}
+        <button popovertarget="manuals">Manuals</button>
+      {/if}
+      {#if (character.stage[1]) && character.qiPoints > 500}
+        <button onclick={tryBreakthroughQiRef}>Breakthrough Qi Refinement</button>
+      {/if}
+      {#if (character.stage[2]) && character.qiPoints > 1500}
+        <button onclick={tryBreakthroughFoundation}>Breakthrough Foundation</button>
+      {/if}
+      {#if (character.stage[3]) && character.qiPoints > 7500}
+        <button onclick={tryBreakthroughGoldenCore}>Breakthrough Golden Core</button>
+      {/if}
+    </div>
+
+    <div class="event-panels-container"></div>       
+    {#if character.age === 5}
+      <div class="learn-cultivation" id="learn-cultivation">
+        <button onclick={addBasicQiManual} id="basic-qi-manual-button"
+          >Basic Qi Manual</button
+        >
+        <p style="color: red;">
+          If you do not select a manual you may not get another chance!
+        </p>
+        <button onclick={exitLearnCultivation}>Exit</button>
+      </div>
+    {/if}    
+    <div popover id="manuals">
+      {#if character.manuals}
+        {#each character.manuals as manual}
+          <p>Manual: {manual.title}</p>
+          <p>Method: {manual.methodInfo}</p>
+        {/each}
+      {:else}
+        <p>No Manuals Aquired</p>
+      {/if}
+      <button popovertarget="manuals">Exit</button>
     </div>
   {/if}
-
-  
-    {#if character.age}
-    <div class="learn-cultivation" id="learn-cultivation">
-      <p>If you do not select a manual you may not get another chance!</p>
-    </div>
-    {/if}
 </main>
 
 <!-- panels for events -->
- 
 
- <!-- button ui panels -->
- 
+<!-- button ui panels -->
+
 <style>
-
   main {
     margin: 2rem;
     padding: 2rem;
@@ -524,11 +896,9 @@
     margin-right: 1rem;
   }
 
-  .actions-container > button{
+  .actions-container > button {
     margin-right: 1rem;
-    
   }
-
 
   /* event panels */
   .event-panels-container > div {
@@ -536,9 +906,17 @@
   }
 
   .learn-cultivation {
+    position: absolute;
+    left: 4rem;
+    right: 4rem;
+    top: 4rem;
+    bottom: 4rem;
     display: flex;
+    flex-direction: column;
+    background-color: #999;
+    border: black 0.5rem solid;
+    border-radius: 0.5rem;
   }
 
   /* button ui panels */
-
 </style>
