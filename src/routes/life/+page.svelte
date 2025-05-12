@@ -167,7 +167,236 @@
 
   // Check and apply breakthrough when Qi threshold reached
   
+  function tryBreakthroughQiRef() {
+  if (!character) return;
+  if (character.qiPoints < 500 || !character.stage[1]) return;
 
+  const roll = Math.random() * 100;
+  let isBreak = false;
+  const qi = character.qiPoints;
+  const cap = character.qiCapacity;
+
+  function setBodyLifespanPoints() {
+    if (cap >= 1050) {
+      character.unallocatedPoints += 8;
+      character.stats.constitution += 3;
+      character.qiCapacity *= 1.3;
+      character.stats.lifespan  += 15;
+    } else if (cap > 750) {
+      character.unallocatedPoints += 5;
+      character.stats.constitution += 2;
+      character.qiCapacity *= 1.18;
+      character.stats.lifespan  += 10;
+    } else {
+      character.unallocatedPoints += 5;
+      character.stats.constitution += 2;
+      character.qiCapacity *= 1.09;
+      character.stats.lifespan  += 5;
+      
+    }
+  }
+
+  if (cap === qi) {
+    if (roll >= 5) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 50); 
+    }
+  } else if ((qi >= (3 * (cap / 4))) && (qi < cap)) {
+    if (roll <= 35) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 65);
+    }
+  } else if ((qi < (3 * (cap / 4))) && (qi >=  (cap / 2))) {
+    if (roll <= 90) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 95);
+    }
+  }
+
+  const result = {
+    id: Date.now(),
+    title: isBreak ? `Age ${character.age}: Qi Refinement Breakthrough: Success` : `Age ${character.age}: Qi Refinement Breakthrough: Failed`,
+    description: isBreak
+      ? `You have laid the Qi Refinement for your cultivation.`
+      : 'You failed to reach Qi Refinement',
+    date: new Date().toISOString()
+  };
+
+  character.lifeEvents.push(result);
+  
+  if (isBreak) {
+    character.stage[1] = false;
+    character.stage[2] = true;
+    
+  }
+  isBreak = false;
+
+  saveCharacter();
+}
+
+function tryBreakthroughFoundation() {
+  if (!character) return;
+  if (character.qiPoints < 1500 || !character.stage[2]) return;
+
+  const roll = Math.random() * 100;
+  let isBreak = false;
+  const qi = character.qiPoints;
+  const cap = character.qiCapacity;
+
+  function setBodyLifespanPoints() {
+    if (cap >= 3000) {
+      character.unallocatedPoints += 12;
+      character.stats.constitution += 9;
+      character.qiCapacity *= 1.5;
+      character.body = { grade: "Heaven", description: "A body blessed by the heavens themselves, radiating unmatched purity." };
+      character.stats.lifespan += 20;
+    } else if (cap > 2250) {
+      character.unallocatedPoints += 9;
+      character.stats.constitution += 6;
+      character.qiCapacity *= 1.3;
+      character.body = { grade: "Earth", description: "A body forged from the earth, stable and admired by many cultivators." };
+      character.stats.lifespan += 15;
+    } else {
+      character.unallocatedPoints += 6;
+      character.stats.constitution += 3;
+      character.qiCapacity *= 1.15;
+      character.body = { grade: "Mortal", description: "An ordinary mortal body, a path walked by countless others." };
+      character.stats.lifespan += 10;
+    }
+  }
+
+  if (cap === qi) {
+    if (roll >= 5) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 50); 
+    }
+  } else if ((qi >= (3 * (cap / 4))) && (qi < cap)) {
+    if (roll <= 35) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 65);
+    }
+  } else if ((qi < (3 * (cap / 4))) && (qi >=  (cap / 2))) {
+    if (roll <= 10) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 95);
+    }
+  }
+
+  const result = {
+    id: Date.now(),
+    title: `Age ${character.age}: Foundation Establishment`,
+    description: `You have achieved Foundation Establishment. Your body is of ${character.body.grade} grade. ${character.body.description}`,
+    date: new Date().toISOString()
+  };
+
+  character.lifeEvents.push(result);
+  if (isBreak) {
+    character.stage[2] = false;
+    character.stage[3] = true;
+    isBreak = false;
+  }
+
+  saveCharacter();
+}
+
+function tryBreakthroughGoldenCore() {
+  if (!character) return;
+  if (character.qiPoints < 7500 || !character.stage[3]) return;
+
+  const roll = Math.random() * 100;
+  let isBreak = false;
+  const qi = character.qiPoints;
+  const cap = character.qiCapacity;
+
+  function setBodyLifespanPoints() {
+    if (cap >= 15000) {
+      character.unallocatedPoints += 15;
+      character.stats.constitution += 12;
+      character.qiCapacity *= 1.8;
+      character.core = { grade: 1, description: "A divine golden core forms, resonating with the laws of the cosmos themselves." };
+      character.stats.lifespan  += 20;
+    } else if (cap >= 12000){
+      character.unallocatedPoints += 12;
+      character.stats.constitution += 10;
+      character.qiCapacity *= 1.55;
+      character.core = { grade: 2, description: "Your golden core shines like a star, drawing the gaze of celestial beings." };
+      character.stats.lifespan  += 20;
+    } else if (cap >= 9750) {
+      character.unallocatedPoints += 9;
+      character.stats.constitution += 8;
+      character.qiCapacity *= 1.30;
+      character.core = { grade: 3, description: "An exceptional golden core forms, admired among mortals and envied by lesser sects." };
+      character.stats.lifespan  += 15;
+    } else if (cap >= 8250) {
+      character.unallocatedPoints += 7;
+      character.stats.constitution += 6;
+      character.qiCapacity *= 1.15;
+      character.core = { grade: 4, description: "A stable golden core emerges, ensuring a solid future though lacking brilliance." };
+      character.stats.lifespan  += 15;
+    } else {
+      character.unallocatedPoints += 5;
+      character.stats.constitution += 3;
+      character.qiCapacity *= 1.09;
+      character.core = { grade: 5, description: "A dim golden core takes shape, common among the masses who strive but fall short of legend." };
+      character.stats.lifespan  += 10;
+    }
+  }
+
+  if (cap === qi) {
+    if (roll >= 5) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 50); 
+    }
+  } else if ((qi >= (3 * (cap / 4))) && (qi < cap)) {
+    if (roll <= 35) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 65);
+    }
+  } else if ((qi < (3 * (cap / 4))) && (qi >=  (cap / 2))) {
+    if (roll <= 10) {
+      isBreak = true;
+      setBodyLifespanPoints();
+    } else {
+      character.lostHealth += ((baseStatsOf.health / 100) * 95);
+    }
+  }
+
+  const result = {
+  id: Date.now(),
+  title: isBreak
+    ? `Age ${character.age}: Golden Core Formation: Success`
+    : `Age ${character.age}: Golden Core Formation: Failed`,
+  description: isBreak
+    ? `You have formed a Golden Core of Grade ${character.core.grade}. ${character.core.description}`
+    : 'Your attempt to form a Golden Core has failed, leaving your cultivation stagnant.',
+  date: new Date().toISOString()
+};
+
+  character.lifeEvents.push(result);
+  if (isBreak) {
+    character.stage[3] = false;
+    character.stage[4] = true;
+    isBreak = false;
+  }
+
+  saveCharacter();
+}
   
 
   $: equippedManual = character?.manuals
@@ -238,7 +467,6 @@
       if (character.qiPoints >= character.qiCapacity){
         character.qiPoints = character.qiCapacity;
       }
-    
       break;
   }
 
@@ -271,7 +499,9 @@
     if (!character) return;
     character.age++;
 
-    
+    if (character.qiPoints > character.qiCapacity) {
+      character.qiPoints =  character.qiCapacity;
+    }
 
     character.stats.lifespan--;
     // apply selected actions
@@ -405,239 +635,7 @@
   }
 
   
-  function tryBreakthroughQiRef() {
-  if (!character) return;
-  if (character.qiPoints < 500 || !character.stage[1]) return;
-
-  const roll = Math.random() * 100;
-  let isBreak = false;
-  const qi = character.qiPoints;
-  const cap = character.qiCapacity;
-
-  function setBodyLifespanPoints() {
-    if (cap >= 1050) {
-      character.unallocatedPoints += 8;
-      character.stats.constitution += 3;
-      character.qiCapacity *= 1.3;
-      character.stats.lifespan  += 15;
-    } else if (cap > 750) {
-      character.unallocatedPoints += 5;
-      character.stats.constitution += 2;
-      character.qiCapacity *= 1.18;
-      character.stats.lifespan  += 10;
-    } else {
-      character.unallocatedPoints += 5;
-      character.stats.constitution += 2;
-      character.qiCapacity *= 1.09;
-      character.stats.lifespan  += 5;
-      
-    }
-  }
-
-  if (cap === qi) {
-    if (roll >= 5) {
-      isBreak = true;
-      setBodyLifespanPoints();
-    } else {
-      character.lostHealth += ((baseStatsOf.health / 100) * 50); 
-    }
-  } else if ((qi >= (3 * (cap / 4))) && (qi < cap)) {
-    if (roll <= 35) {
-      isBreak = true;
-      setBodyLifespanPoints();
-    } else {
-      character.lostHealth += ((baseStatsOf.health / 100) * 65);
-    }
-  } else if ((qi < (3 * (cap / 4))) && (qi >=  (cap / 2))) {
-    if (roll <= 10) {
-      isBreak = true;
-      setBodyLifespanPoints();
-    } else {
-      character.lostHealth += ((baseStatsOf.health / 100) * 95);
-    }
-  }
-
-  const result = {
-    id: Date.now(),
-    title: isBreak ? `Age ${character.age}: Qi Refinement Breakthrough: Success` : `Age ${character.age}: Qi Refinement Breakthrough: Failed`,
-    description: isBreak
-      ? `You have laid the Qi Refinement for your cultivation.`
-      : 'You failed to reach Qi Refinement',
-    date: new Date().toISOString()
-  };
-
-  character.lifeEvents.push(result);
   
-  if (isBreak) {
-    character.stage[1] = false;
-    character.stage[2] = true;
-    isBreak = false;
-  }
-  
-
-  saveCharacter();
-}
-
-function tryBreakthroughFoundation() {
-  if (!character) return;
-  if (character.qiPoints < 1500 || !character.stage[2]) return;
-
-  const roll = Math.random() * 100;
-  let isBreak = false;
-  const qi = character.qiPoints;
-  const cap = character.qiCapacity;
-
-  function setBodyLifespanPoints() {
-    if (cap >= 3000) {
-      character.unallocatedPoints += 12;
-      character.stats.constitution += 9;
-      character.qiCapacity *= 1.5;
-      character.body = { grade: "Heaven", description: "The heavens have decided your home." };
-      character.stats.lifespan  += 20;
-    } else if (cap > 2250) {
-      character.unallocatedPoints += 9;
-      character.stats.constitution += 6;
-      character.qiCapacity *= 1.3;
-      character.body = { grade: "Earth", description: "The world belongs to some." };
-      character.stats.lifespan  += 15;
-    } else {
-      character.unallocatedPoints += 6;
-      character.stats.constitution += 3;
-      character.qiCapacity *= 1.15;
-      character.body = { grade: "Mortal", description: "Many will walk the path of the mortal" };
-      character.stats.lifespan  += 10;
-      
-    }
-  }
-
-  if (cap === qi) {
-    if (roll >= 5) {
-      isBreak = true;
-      setBodyLifespanPoints();
-    } else {
-      character.lostHealth += ((baseStatsOf.health / 100) * 50); 
-    }
-  } else if ((qi >= (3 * (cap / 4))) && (qi < cap)) {
-    if (roll <= 35) {
-      isBreak = true;
-      setBodyLifespanPoints();
-    } else {
-      character.lostHealth += ((baseStatsOf.health / 100) * 65);
-    }
-  } else if ((qi < (3 * (cap / 4))) && (qi >=  (cap / 2))) {
-    if (roll <= 10) {
-      isBreak = true;
-      setBodyLifespanPoints();
-    } else {
-      character.lostHealth += ((baseStatsOf.health / 100) * 95);
-    }
-  }
-
-  const result = {
-    id: Date.now(),
-    title: isBreak ? `Age ${character.age}: Foundation Establishment: Success` : `Age ${character.age}: Foundation Establishment: Failed`,
-    description: isBreak
-      ? `You have laid the Foundation Establishment for your cultivation. You have a ${character.body.grade} grade body.`
-      : 'You failed to establish your foundation.',
-    date: new Date().toISOString()
-  };
-
-  character.lifeEvents.push(result);
-  if (isBreak) {
-    character.stage[2] = false;
-    character.stage[3] = true;
-    isBreak = false;
-  }
-
-  saveCharacter();
-}
-
-function tryBreakthroughGoldenCore() {
-  if (!character) return;
-  if (character.qiPoints < 7500 || !character.stage[3]) return;
-
-  const roll = Math.random() * 100;
-  let isBreak = false;
-  const qi = character.qiPoints;
-  const cap = character.qiCapacity;
-
-  function setBodyLifespanPoints() {
-    if (cap >= 15000) {
-      character.unallocatedPoints += 15;
-      character.stats.constitution += 12;
-      character.qiCapacity *= 1.8;
-      character.core = { grade: 1, description: "A divine golden core forms, resonating with the laws of the cosmos themselves." };
-      character.stats.lifespan  += 20;
-    } else if (cap >= 12000){
-      character.unallocatedPoints += 12;
-      character.stats.constitution += 10;
-      character.qiCapacity *= 1.55;
-      character.core = { grade: 2, description: "Your golden core shines like a star, drawing the gaze of celestial beings." };
-      character.stats.lifespan  += 20;
-    } else if (cap >= 9750) {
-      character.unallocatedPoints += 9;
-      character.stats.constitution += 8;
-      character.qiCapacity *= 1.30;
-      character.core = { grade: 3, description: "An exceptional golden core forms, admired among mortals and envied by lesser sects." };
-      character.stats.lifespan  += 15;
-    } else if (cap >= 8250) {
-      character.unallocatedPoints += 7;
-      character.stats.constitution += 6;
-      character.qiCapacity *= 1.15;
-      character.core = { grade: 4, description: "A stable golden core emerges, ensuring a solid future though lacking brilliance." };
-      character.stats.lifespan  += 15;
-    } else {
-      character.unallocatedPoints += 5;
-      character.stats.constitution += 3;
-      character.qiCapacity *= 1.09;
-      character.core = { grade: 5, description: "A dim golden core takes shape, common among the masses who strive but fall short of legend." };
-      character.stats.lifespan  += 10;
-    }
-  }
-
-  if (cap === qi) {
-    if (roll >= 5) {
-      isBreak = true;
-      setBodyLifespanPoints();
-    } else {
-      character.lostHealth += ((baseStatsOf.health / 100) * 50); 
-    }
-  } else if ((qi >= (3 * (cap / 4))) && (qi < cap)) {
-    if (roll <= 35) {
-      isBreak = true;
-      setBodyLifespanPoints();
-    } else {
-      character.lostHealth += ((baseStatsOf.health / 100) * 65);
-    }
-  } else if ((qi < (3 * (cap / 4))) && (qi >=  (cap / 2))) {
-    if (roll <= 10) {
-      isBreak = true;
-      setBodyLifespanPoints();
-    } else {
-      character.lostHealth += ((baseStatsOf.health / 100) * 95);
-    }
-  }
-
-  const result = {
-  id: Date.now(),
-  title: isBreak
-    ? `Age ${character.age}: Golden Core Formation: Success`
-    : `Age ${character.age}: Golden Core Formation: Failed`,
-  description: isBreak
-    ? `You have formed a Golden Core of Grade ${character.core.grade}. ${character.core.description}`
-    : 'Your attempt to form a Golden Core has failed, leaving your cultivation stagnant.',
-  date: new Date().toISOString()
-};
-
-  character.lifeEvents.push(result);
-  if (isBreak) {
-    character.stage[2] = false;
-    character.stage[3] = true;
-    isBreak = false;
-  }
-
-  saveCharacter();
-}
 
     //event buttons
   //learn-cultivation
@@ -674,9 +672,11 @@ function tryBreakthroughGoldenCore() {
       <p>Realm: {realmNumber - 1}</p>
       {#if character.body}
         <p>Body: {character.body.grade}</p>
+        <p>{character.body.description}</p>
       {/if}
       {#if character.core}
-        <p>Body: {character.core.grade}</p>
+        <p>Core: {character.core.grade}</p>
+        <p>{character.core.description}</p>
       {/if}
 
       <p>Lifespan: {character.stats.lifespan}</p>
