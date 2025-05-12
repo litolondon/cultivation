@@ -7,6 +7,7 @@
   let createdParam = "";
   let name = "";
   let capacity;
+  let background;
 
   const namePrefixes = [
     "Li",      // plum
@@ -213,6 +214,7 @@
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
+
   function randomizeStats() {
     let total = 0;
     let generated;
@@ -231,8 +233,18 @@
     } while (total < 20 || total > 35);
 
     capacity = rand(250, 1000);
+    console.log(capacity);
 
-    console.log(capacity)
+    const randStatus = rand(1, 10);
+    console.log(randStatus);
+
+    if (randStatus >= 9) {
+        background = 'Cultivation';
+      } else if  ((randStatus >= 6.5) && (randStatus < 9)) {
+        background = 'Rich';
+      } else {
+        background = 'Humble'
+      }
 
     baseStats = generated;
     pointsRemaining = 5;
@@ -268,7 +280,8 @@
       createdAt: new Date().toISOString(),
       unallocatedPoints: pointsRemaining,  // save remaining points
       stage: Array(12).fill(false),
-      qiCapacity: capacity
+      qiCapacity: capacity,
+      heir: background
     };
 
     character.stage[1] = true;
@@ -317,6 +330,7 @@
           <button type="button" onclick={randomizeName}>🎲</button>
         </div>
 
+        <div class="stat-row"><span>Background: {background}</span></div>
         {#each Object.entries(baseStats) as [key, value]}
           <div class="stat-row">
             <span style="flex:1;">
