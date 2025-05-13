@@ -1242,17 +1242,31 @@
       const eRoll = Math.random() * 100;
 
       if (character.stage[1]) {
-        if (eRoll >= 0) {
+        if (eRoll >= 95) {
           //herb
-          // triggerHerbEvent();
-          triggerTreasureEvent();
+          triggerHerbEvent();
         } else if ((eRoll >= 20) && (eRoll < 85)) {
           //battle
+          character.lifeEvents.push({
+            id: Date.now(),
+            title: `Age ${character.age}: Battle Encounter`,
+            description: 'You encountered a fierce beast in the wilds. You fought bravely and earned valuable experience.',
+            date: new Date().toISOString()
+          });
+          character.stats.strength += 1;
+          character.qiPoints += 30;
 
 
         } else if ((eRoll >= 30) && (eRoll < 35)) {
           //encounter
-          
+          character.lifeEvents.push({
+            id: Date.now(),
+            title: `Age ${character.age}: Mysterious Encounter`,
+            description: 'You met a mysterious figure during your exploration. They left behind cryptic advice that lingers in your mind.',
+            date: new Date().toISOString()
+          });
+          character.stats.intelligence += 1;
+          character.stats.luck += 1;
         } else if ((eRoll >= 20) && (eRoll < 25)) {
           //treasure
           triggerTreasureEvent();
@@ -1912,6 +1926,12 @@
         <div style="margin: 1rem; padding: 1rem; background-color: #999; border-radius: 0.75rem;">
           <p>Manual: {manual.title}</p>
           <p>Method: {manual.methodInfo}</p>
+          <h3>Requirements:</h3>
+          <ul>
+            {#each Object.entries(manual.statRequirements) as [stat, req]}
+              <li>{stat}: {character?.stats?.[stat] ?? 0} / {req}</li>
+            {/each}
+           </ul>
           {#if manual.equipped}
             <p style="color: green;">Equipped</p>
           {:else}
