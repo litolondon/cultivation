@@ -1,6 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import type { HumanBattler } from '$lib/battle';
+  import type { BattleEncounter } from '$lib/battle';
+  import { generateHumanBattler } from '$lib/battle';
+  import { linear } from 'svelte/easing';
  
 
   // Structure for life events awarding spendable points
@@ -73,7 +77,7 @@
     lifespan: number;
     unallocatedPoints: number;
     lifeEvents: LifeEvent[];       
-    stage: boolean[];  // which stage
+    stage: number;  // which stage
     qiPoints: number;  
     qiCapacity: number;
     usedStam: number;
@@ -85,16 +89,13 @@
   };
 
 
-  let window: {
-    id: number;
-    treasure: Treasure | Manual;
-    type: "treasure" | "manual";
-  }   
 
   let actionCount = 0;
   let activeHerbWindows: { id: number, herb: ExploreHerbEventDef }[] = [];
   let activeTreasureWindows: { id: number; treasure: Treasure | Manual; type: 'treasure' | 'manual' }[] = [];
+  let activeBattleWindows: BattleEncounter[] = [];
   $: hasStarterManual = character?.manuals?.some(m => m.title === starterManuals[character.heir]?.title) ?? false;
+  
 
   let character: Character | null = null;
   // Selected actions for the current year
@@ -835,7 +836,7 @@
     if (!character) return;
     if (character.qiPoints < 500 || !character.stage[1]) return;
 
-    const roll = Math.random() * 100;
+    const roll = (Math.random() * 100) + luck;
     let isBreak = false;
     const qi = character.qiPoints;
     const cap = character.qiCapacity;
@@ -860,7 +861,7 @@
       }
     }
 
-    if (cap === qi) {
+    if (cap <= qi) {
       if (roll >= 5) {
         isBreak = true;
         setBodyLifespanPoints();
@@ -892,7 +893,7 @@
       date: new Date().toISOString()
     };
 
-    character.lifeEvents.push(result);
+    character.lifeEvents.unshift(result);
     
     if (isBreak) {
       character.stage[1] = false;
@@ -908,7 +909,7 @@
     if (!character) return;
     if (character.qiPoints < 1500 || !character.stage[2]) return;
 
-    const roll = Math.random() * 100;
+    const roll = (Math.random() * 100) + luck;
     let isBreak = false;
     const qi = character.qiPoints;
     const cap = character.qiCapacity;
@@ -935,7 +936,7 @@
       }
     }
 
-    if (cap === qi) {
+    if (cap <= qi) {
       if (roll >= 5) {
         isBreak = true;
         setBodyLifespanPoints();
@@ -965,7 +966,7 @@
       date: new Date().toISOString()
     };
 
-    character.lifeEvents.push(result);
+    character.lifeEvents.unshift(result);
     if (isBreak) {
       character.stage[2] = false;
       character.stage[3] = true;
@@ -979,7 +980,7 @@
     if (!character) return;
     if (character.qiPoints < 7500 || !character.stage[3]) return;
 
-    const roll = Math.random() * 100;
+    const roll = (Math.random() * 100) + luck;
     let isBreak = false;
     const qi = character.qiPoints;
     const cap = character.qiCapacity;
@@ -1018,7 +1019,7 @@
       }
     }
 
-    if (cap === qi) {
+    if (cap <= qi) {
       if (roll >= 5) {
         isBreak = true;
         setBodyLifespanPoints();
@@ -1052,7 +1053,7 @@
     date: new Date().toISOString()
   };
 
-    character.lifeEvents.push(result);
+    character.lifeEvents.unshift(result);
     if (isBreak) {
       character.stage[3] = false;
       character.stage[4] = true;
@@ -1073,6 +1074,7 @@
     ? character.treasures.find(t => t.equipped)?.name ?? 'None'
     : 'No Treasure Equipped';
 
+
   // Allocate unallocated points to stats
   function allocatePoint(key: keyof Character['stats']) {
     if (!character || character.unallocatedPoints <= 0) return;
@@ -1084,16 +1086,16 @@
   function performAction(def: LifeEventDef) {
   if (!character) return;
 
-  const roll = Math.random() * 100;
+  const roll = (Math.random() * 100) - luck;
 
   switch (def.title) {
     case 'Imagine':
-      if (roll < 23) {
-        character.stats.qiAffinity += 2;
-      } else if (roll < 95) {
-        character.stats.intelligence += 1;
-      } else {
+      if (roll < 10) {
         character.stats.luck += 1;
+      } else if (roll < 40) {
+        character.stats.qiAffinity += 2;
+      } else {
+        character.stats.intelligence += 1;
       }
       break;
     case 'Play':
@@ -1108,21 +1110,21 @@
       }
       break;
     case 'Observe':
-      if (roll < 69) {
-        character.stats.intelligence += 1;
-      } else if (roll < 99) {
+      if (roll < 1) {
+        character.stats.luck += 2; 
+      } else if (roll < 31) {
         character.stats.charisma += 2;
       } else {
-        character.stats.luck += 2;
+        character.stats.intelligence += 1;
       }
       break;
     case 'Train Meridians':
       if (roll <= 30){
-        character.qiCapacity += Math.round(getEffectiveStat('qiAffinity')) * 0.8 * realmNumber;
+        character.qiCapacity += Math.round(getEffectiveStat('qiAffinity')) * 2 * realmNumber;
       } else if ((roll <= 95) && (roll > 30)) {
         character.qiCapacity += Math.round(getEffectiveStat('qiAffinity')) * 1.2 * realmNumber;
       } else if ((roll <= 100) && (roll > 95)) {
-        character.qiCapacity += Math.round(getEffectiveStat('qiAffinity')) * 2 * realmNumber;
+        character.qiCapacity += Math.round(getEffectiveStat('qiAffinity')) * 0.8 * realmNumber;
       }
 
       break;
@@ -1157,9 +1159,9 @@
       character.stats.constitution = Math.max(1, Math.floor(getEffectiveStat('constitution') * 0.9));
 
     } else if (equippedManual === "Demon Emperor Scripture") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 2.5 * realmNumber);
-      character.qiPoints += Math.round(getEffectiveStat('strength') * 0.5);
-      character.lostHealth += 10;
+      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 3.2 * realmNumber);
+      character.qiPoints += Math.round(getEffectiveStat('strength') * 0.8);
+      character.lostHealth += Math.round(baseStatsOf.health * 0.2);
 
     } else if (equippedManual === "Sky Immortal Sutra") {
       character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 3 * realmNumber);
@@ -1239,52 +1241,51 @@
 
 
     case 'Explore':
-      const eRoll = Math.random() * 100;
+      const eRoll = (Math.random() * 100) + luck;
 
-      if (character.stage[1]) {
-        if (eRoll >= 95) {
-          //herb
-          triggerHerbEvent();
-        } else if ((eRoll >= 20) && (eRoll < 85)) {
-          //battle
-          character.lifeEvents.push({
-            id: Date.now(),
-            title: `Age ${character.age}: Battle Encounter`,
-            description: 'You encountered a fierce beast in the wilds. You fought bravely and earned valuable experience.',
-            date: new Date().toISOString()
-          });
-          character.stats.strength += 1;
-          character.qiPoints += 30;
-
-
-        } else if ((eRoll >= 30) && (eRoll < 35)) {
+      if ((character.stage[1]) || (character.stage[2]) || (character.stage[3]) || (character.stage[4])) {
+        if (eRoll >= 99) {
           //encounter
-          character.lifeEvents.push({
+          character.lifeEvents.unshift({
             id: Date.now(),
             title: `Age ${character.age}: Mysterious Encounter`,
             description: 'You met a mysterious figure during your exploration. They left behind cryptic advice that lingers in your mind.',
             date: new Date().toISOString()
           });
-          character.stats.intelligence += 1;
-          character.stats.luck += 1;
-        } else if ((eRoll >= 20) && (eRoll < 25)) {
+          character.stats.intelligence += 2;
+          character.stats.luck += 2;
+          character.qiPoints += Math.floor(character.qiCapacity / 10);
+        } else if ((eRoll >= 94) && (eRoll < 99)) {
           //treasure
           triggerTreasureEvent();
+        } else if ((eRoll >= 69) && (eRoll < 94)) {
+          //herb
+          triggerHerbEvent();
+        } else if ((eRoll >= 39) && (eRoll < 69)) {
+          //battle
+
+          triggerBattleEvent();
+
+          character.lifeEvents.unshift({
+            id: Date.now(),
+            title: `Age ${character.age}: Battle Encounter`,
+            description: 'You encountered a fierce beast in the wilds. You fought bravely and earned valuable experience.',
+            date: new Date().toISOString()
+          });
         } else {
           //nothing
+          character.lifeEvents.unshift({
+            id: Date.now(),
+            title: `Age ${character.age}: Explore`,
+            description: 'You went exploring and found nothing.',
+            date: new Date().toISOString()
+          });
         }
-        
-      } else if (character.stage[2]) {
-
-      } else if (character.stage[3]) {
-
-      } else if (character.stage[4]) {
-
-      }
+      } 
       break;
   }
 
-  character.lifeEvents.push({
+  character.lifeEvents.unshift({
     id: Date.now() + Math.random(),
     title: `Age ${character.age}: ${def.title}`,
     description: def.description,
@@ -1348,7 +1349,7 @@
     eventsThisYear.forEach(def => {
       character!.qiPoints += def.pointsReward;
       if (def.good) character!.unallocatedPoints += def.pointsReward;
-      character!.lifeEvents.push({
+      character!.lifeEvents.unshift({
         id: Date.now() + Math.random(),
         title: `Age ${character!.age}: ${def.title}`,
         description: def.description,
@@ -1390,7 +1391,7 @@
     character.manuals ??= [];
     character.treasures ??= [];
     if (!Array.isArray(character.stage) || character.stage.length !== 12) {
-    character.stage = Array(12).fill(false);
+      character.stage = Array(12).fill(false);
 
     }
     if (!character.lifeEvents || character.lifeEvents.length === 0) {
@@ -1419,7 +1420,7 @@
 
     character.manuals = [...character.manuals, newManual];
 
-    character.lifeEvents.push({
+    character.lifeEvents.unshift({
       id: Date.now(),
       title: `Age 5: Inherited ${newManual.title}`,
       description: `You received your family's ${newManual.method} method: ${newManual.title}.`,
@@ -1448,7 +1449,7 @@
 
     refreshAddedStats();
 
-    character.lifeEvents.push({
+    character.lifeEvents.unshift({
       id: Date.now(),
       title: `Equipped ${manualTitle}`,
       description: `You have chosen to cultivate using the ${manualTitle} method.`,
@@ -1479,7 +1480,7 @@
 
     refreshAddedStats();
 
-    character.lifeEvents.push({
+    character.lifeEvents.unshift({
       id: Date.now(),
       title: `Equipped ${treasureToEquip.name}`,
       description: `You equipped the treasure, focusing its aura on your cultivation.`,
@@ -1524,7 +1525,7 @@
     }
 
     // Add life event
-    character.lifeEvents.push({
+    character.lifeEvents.unshift({
       id: Date.now(),
       title: `Age ${character.age}: Collected ${window.herb.name}`,
       description: `You successfully collected the ${window.herb.name}. ${window.herb.description}`,
@@ -1539,7 +1540,7 @@
     const window = activeHerbWindows.find(w => w.id === windowId);
     if (!window) return;
 
-    character.lifeEvents.push({
+    character.lifeEvents.unshift({
       id: Date.now(),
       title: `Age ${character.age}: Gave up ${window.herb.name}`,
       description: `You chose to leave the ${window.herb.name} untouched.`,
@@ -1602,7 +1603,7 @@
       if (!alreadyOwned) {
         character.treasures = [...character.treasures, treasure];
 
-        character.lifeEvents.push({
+        character.lifeEvents.unshift({
           id: Date.now(),
           title: `Age ${character.age}: Acquired ${treasure.name}`,
           description: `You obtained the ${treasure.name}.`,
@@ -1617,7 +1618,7 @@
       if (!alreadyOwned) {
         character.manuals = [...character.manuals, manual];
 
-        character.lifeEvents.push({
+        character.lifeEvents.unshift({
           id: Date.now(),
           title: `Age ${character.age}: Acquired ${manual.title}`,
           description: `You learned the ${manual.title}.`,
@@ -1637,7 +1638,7 @@
     const window = activeTreasureWindows.find(w => w.id === windowId);
     if (!window) return;
 
-    character.lifeEvents.push({
+    character.lifeEvents.unshift({
       id: Date.now(),
       title: `Age ${character.age}: Gave up ${window.type === 'treasure' ? (window.treasure as Treasure).name : (window.treasure as Manual).title}`,
       description: `You chose to give up the ${window.type === 'treasure' ? (window.treasure as Treasure).name : (window.treasure as Manual).title}.`,
@@ -1677,6 +1678,40 @@
     return (character.stats?.[stat] ?? 0) + (character.addedStats?.[stat] ?? 0);
   }
 
+  function getEnemyEffectiveStat(enemy: HumanBattler, stat: string): number {
+    return enemy.stats?.[stat] ?? 0;
+  }
+
+  function calculateBattlerStats(battler: HumanBattler): {
+    health: number;
+    stamina: number;
+    dodge: string;
+    pAttack: number;
+    sAttack: number;
+    pDef: number;
+    sDef: number;
+    persuasion: string;
+    chance: number;
+  } {
+    let realmMultiplier = battler.stage;
+    if (realmMultiplier === 0) {
+      realmMultiplier = 1;
+    }
+
+    return {
+      health: Math.round((battler.stats.constitution ?? 0) * 4 * realmMultiplier),
+      stamina: Math.round((((battler.stats.constitution ?? 0) + (battler.stats.dexterity ?? 0)) / 2) * realmMultiplier),
+      dodge: ((((battler.stats.dexterity ?? 0) / 8) * realmMultiplier) / 2 / 1000).toFixed(2),
+      pAttack: Math.round((battler.stats.strength ?? 0) * 2 * realmMultiplier),
+      sAttack: Math.round(((battler.stats.qiAffinity ?? 0) + ((battler.stats.intelligence ?? 0) / 2)) * (battler.qiPoints * 0.005)),
+      pDef: Math.round((((battler.stats.strength ?? 0) + (battler.stats.constitution ?? 0)) * 1.5) * realmMultiplier),
+      sDef: Math.round((((battler.stats.qiAffinity ?? 0) + (battler.stats.intelligence ?? 0)) * 1.5) * realmMultiplier),
+      persuasion: ((((battler.stats.charisma ?? 0) / 4) * realmMultiplier) / 2 / 1000).toFixed(2),
+      chance: Math.round(battler.stats.luck) / 2
+    };
+  }
+
+
   $: realmNumber = character
   ? character.stage.findIndex(flag => flag === true) : 0;
 
@@ -1689,7 +1724,7 @@
       sAttack: Math.round((getEffectiveStat('qiAffinity') + getEffectiveStat('intelligence') / 2) + (character.qiPoints * 0.005) * realmNumber),
       pDef: Math.round(((getEffectiveStat('strength') + getEffectiveStat('constitution')) * 1.5) * realmNumber),
       sDef: Math.round(((getEffectiveStat('qiAffinity') + (getEffectiveStat('intelligence') / 4) + (getEffectiveStat('constitution') / 4)) + (character.qiPoints * 0.005)) * (realmNumber / 2)),
-      persuasion: ((((getEffectiveStat('charisma') / 4) * realmNumber) / 2) / 1000).toFixed(2),
+      persuasion: ((((getEffectiveStat('charisma') / 4) * realmNumber) / 2) / 1000).toFixed(2) 
     }
   : {
       health: 0,
@@ -1702,20 +1737,124 @@
       persuasion: 0
     };
 
-  $: currStam = character
-  ? {
-     c: baseStatsOf.stamina - character.usedStam
-  }
-  : {
-    c: baseStatsOf.stamina
-  }
 
-  $: currHealth = character
-  ? {
-     c: baseStatsOf.health - character.lostHealth
-  }
-  : {
-    c: baseStatsOf.health
+    $: luck = character
+    ? Math.round((getEffectiveStat('luck')) / 2)
+    : 0
+
+    $: currStam = character
+    ? {
+      c: baseStatsOf.stamina - character.usedStam
+    }
+    : {
+      c: baseStatsOf.stamina
+    }
+
+    $: currHealth = character
+    ? {
+      c: baseStatsOf.health - character.lostHealth
+    }
+    : {
+      c: baseStatsOf.health
+    }
+
+    function triggerBattleEvent() {
+      if (!character) return;
+
+      if (character.stage[1]) {
+        const enemy = generateHumanBattler(0);
+        const encounterId = Date.now() + Math.random();
+
+        const battleStats = calculateBattlerStats(enemy);
+        enemy.curStam = battleStats.stamina;
+        enemy.curHealth = battleStats.health;
+
+
+        activeBattleWindows = [
+          ...activeBattleWindows,
+          {
+            id: encounterId,
+            enemy,
+            stats: battleStats,
+            prize: enemy.spiritstones // or any logic you have
+          }
+        ];
+      } else if (character.stage[2]) {
+        const enemy = generateHumanBattler(1);
+        const encounterId = Date.now() + Math.random();
+
+        const battleStats = calculateBattlerStats(enemy);
+        enemy.curStam = battleStats.stamina;
+        enemy.curHealth = battleStats.health;
+
+
+        activeBattleWindows = [
+          ...activeBattleWindows,
+          {
+            id: encounterId,
+            enemy,
+            stats: battleStats,
+            prize: enemy.spiritstones // or any logic you have
+          }
+        ];
+      } else if (character.stage[3]) {
+        const enemy = generateHumanBattler(2);
+        const encounterId = Date.now() + Math.random();
+
+        const battleStats = calculateBattlerStats(enemy);
+        enemy.curStam = battleStats.stamina;
+        enemy.curHealth = battleStats.health;
+
+
+        activeBattleWindows = [
+          ...activeBattleWindows,
+          {
+            id: encounterId,
+            enemy,
+            stats: battleStats,
+            prize: enemy.spiritstones // or any logic you have
+          }
+        ];
+      } else if (character.stage[4]) {
+        const enemy = generateHumanBattler(3);
+        const encounterId = Date.now() + Math.random();
+
+        const battleStats = calculateBattlerStats(enemy);
+        enemy.curStam = battleStats.stamina;
+        enemy.curHealth = battleStats.health;
+
+
+        activeBattleWindows = [
+          ...activeBattleWindows,
+          {
+            id: encounterId,
+            enemy,
+            stats: battleStats,
+            prize: enemy.spiritstones // or any logic you have
+          }
+        ];
+      }
+    }
+
+    function resolveBattle(encounterId: number, result: 'Won' | 'Lost') {
+    const encounter = activeBattleWindows.find(w => w.id === encounterId);
+    if (!encounter || !character) return;
+
+    if (result === 'Won') {
+      character.spiritstones += encounter.enemy.spiritstones;
+    }
+
+    character.lifeEvents.unshift({
+      id: encounter.id,
+      title: `Age ${character.age}: Battle Encounter - ${result}`,
+      description: `You encountered ${encounter.enemy.name} in battle and ${result.toLowerCase()}.`,
+      date: new Date().toISOString(),
+    });
+
+    // Remove the battle window
+    activeBattleWindows = activeBattleWindows.filter(w => w.id !== encounterId);
+
+    saveCharacter();
   }
 
 </script>
@@ -1740,9 +1879,10 @@
       {#if character.age >= 5}
         <p>Manual: {equippedManual}</p>
       {/if}
-      {#if equippedTreasure}
+      {#if character.age >= 5}
       <p>Treasure: {equippedTreasure}</p>
       {/if}
+      <p>Spiritstones:<span style="color: blue; margin-left: 0.25rem">♦︎</span> {character.spiritstones}</p>
 
       <section class="stats">
         <div>
@@ -1811,6 +1951,11 @@
                 <strong>Persuasion:</strong>
                 <span>{baseStatsOf.persuasion}%</span>
               </li>
+              <li>
+                <strong>Chance:</strong>
+                <span>{luck}%</span>
+              </li>
+
               <br />
             </ul>
           </div>
@@ -1836,7 +1981,8 @@
     <div class="main-action-container">
       <!-- Action buttons to choose actions -->
       <section class="actions">
-        <h2>Actions (choose up to 3)</h2>
+        <h2 style="margin-bottom: 0;">Actions </h2>
+        <p style="color: red; margin-top: 0.25rem;">Choose Up To Three</p>
         <div class="actions-container">
           {#if character.age < 5}
             {#each actionEvents5 as act}
@@ -1888,12 +2034,12 @@
       {#if character.stats.lifespan > 0}
         <button onclick={advanceYear}>Next Year</button>
       {/if}
-      <button onclick={resetCharacter}>🔄 Reset Character</button>
       {#if character.age >= 5}
         <button popovertarget="manuals">Manuals</button>
+        <button popovertarget="treasures">Treasures</button>
       {/if}
 
-        <button popovertarget="treasures">Treasures</button>
+        
 
       {#if (character.stage[1]) && character.qiPoints > 500}
         <button onclick={tryBreakthroughQiRef}>Breakthrough Qi Refinement</button>
@@ -1904,6 +2050,8 @@
       {#if (character.stage[3]) && character.qiPoints > 7500}
         <button onclick={tryBreakthroughGoldenCore}>Breakthrough Golden Core</button>
       {/if}
+
+      <button onclick={resetCharacter}>🔄 Reset Character</button>
     </div>
 
     <div class="event-panels-container"></div>       
@@ -2046,6 +2194,97 @@
   </div>
 {/each}
 
+<!-- battle windows -->
+{#each activeBattleWindows as window (window.id)}
+  <div class="battle-window">
+    <h2 style="background-color: lightyellow; color: black;">{window.enemy.encounterDescription}</h2>
+    <div class="grid">
+
+      <!-- Enemy Info -->
+      <div class="battle-enemy-info-container" style="grid-area: e;">
+        <h3>{window.enemy.name}</h3>
+        <p>Realm: {window.enemy.stage}</p>
+        <p>Qi: {window.enemy.qiPoints} / {window.enemy.qiCapacity}</p>
+        <p>Age: {window.enemy.age}</p>
+
+        <h3>Stats</h3>
+        <ul>
+          <li><strong>Health:</strong> {window.enemy.curHealth}/{window.stats.health}</li>
+          <li><strong>Qi:</strong> {Math.round(window.enemy.qiPoints)}/{Math.round(window.enemy.qiCapacity)}</li>
+          <li><strong>Stamina:</strong> {window.enemy.curStam}/{window.stats.stamina}</li>
+          <li><strong>Physical Attack:</strong> {window.stats.pAttack}</li>
+          <li><strong>Spiritual Attack:</strong> {window.stats.sAttack}</li>
+          <li><strong>Physical Defense:</strong> {window.stats.pDef}</li>
+          <li><strong>Spiritual Defense:</strong> {window.stats.sDef}</li>
+          <li><strong>Dodge:</strong> {window.stats.dodge}%</li>
+          <li><strong>Persuasion:</strong> {window.stats.persuasion}%</li>
+        </ul>
+
+        <h4>Attacks:</h4>
+        <ul>
+          {#each window.enemy.attack as attack}
+            <li>{attack.name}</li>
+          {/each}
+        </ul>
+
+        <button popovertarget={"battle-enemy-more-info-" + window.id}>More Info</button>
+      </div>
+
+      <!-- Character Info -->
+      <div class="character-battle-info-container" style="grid-area: c;">
+        <h3>{character.name}</h3>
+        <p>Realm: {realmNumber}</p>
+        <p>Qi: {character.qiPoints} / {character.qiCapacity}</p>
+        <p>Age: {character.age}</p>
+
+        <h3>Stats</h3>
+        <ul>
+          <li><strong>Health:</strong> {currHealth.c}/{baseStatsOf.health}</li>
+          <li><strong>Qi:</strong> {Math.round(character.qiPoints)}/{Math.round(character.qiCapacity)}</li>
+          <li><strong>Stamina:</strong> {currStam.c}/{baseStatsOf.stamina}</li>
+          <li><strong>Physical Attack:</strong> {baseStatsOf.pAttack}</li>
+          <li><strong>Spiritual Attack:</strong> {baseStatsOf.sAttack}</li>
+          <li><strong>Physical Defense:</strong> {baseStatsOf.pDef}</li>
+          <li><strong>Spiritual Defense:</strong> {baseStatsOf.sDef}</li>
+          <li><strong>Dodge:</strong> {baseStatsOf.dodge}%</li>
+          <li><strong>Persuasion:</strong> {baseStatsOf.persuasion}%</li>
+          <li><strong>Chance:</strong> {luck}%</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Battle Action Buttons -->
+    <div style="grid-area: f;">
+      <button onclick={() => resolveBattle(window.id, 'Won')}>Win</button>
+      <button onclick={() => resolveBattle(window.id, 'Lost')}>Lose</button>
+    </div>
+
+    <!-- Popover More Info -->
+    <div popover id={"battle-enemy-more-info-" + window.id} style="background-color: lightyellow;">
+      <h3>Attributes:</h3>
+      <ul>
+        {#each Object.entries(window.enemy.stats) as [stat, value]}
+          <li>{stat}: {value}</li>
+        {/each}
+      </ul>
+      <h3>Attacks:</h3>
+      {#each window.enemy.attack as attack}
+        <div>
+          <h4>{attack.name}</h4>
+          <ul>
+            <li>Damage: {Math.round(attack.dmg * 100)}%</li>
+            <li>Stamina Cost: {Math.round(attack.staminaCost * 100)}%</li>
+            <li>Qi Cost: {Math.round(attack.qiCost * 100)}%</li>
+            <li>Chance: {Math.round(attack.chance * 100)}%</li>
+          </ul>
+        </div>
+      {/each}
+    </div>
+  </div>
+{/each}
+
+
+
 </main>
 
 <!-- panels for events -->
@@ -2126,4 +2365,46 @@
   display: flex;
   flex-direction: row;
 }
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.controls > button {
+  height: 4rem;
+}
+
+.battle-window {
+  background: #222;
+  color: white;
+  padding: 1rem;
+  border: 2px solid gold;
+  position: fixed;
+  top: 20%;
+  left: 20%;
+  width: 60%;
+  z-index: 999;
+}
+
+.battle-enemy-info-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: right;
+}
+
+.grid{
+  display: grid;
+  grid-template-areas: 
+  'c . e'
+  'c . e'
+  'c . e'
+  'c . e'
+  'c . e'
+  'c . e'
+  'f f f'
+  ;
+}
 </style>
+
