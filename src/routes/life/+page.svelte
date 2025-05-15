@@ -2337,10 +2337,10 @@
     margin-right: 1rem;
   }
 
-  /* event panels */
+  /* event panels
   .event-panels-container > div {
-    /* display: none; */
-  }
+    display: none;
+  } */
 
   .learn-cultivation {
     position: absolute;
