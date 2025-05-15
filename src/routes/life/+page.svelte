@@ -1,10 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import type { HumanBattler } from '$lib/battle';
-  import type { BattleEncounter } from '$lib/battle';
+  import { capitalize } from '$lib/helpers/capitalize';
+  import type { HumanBattler, BattleEncounter } from '$lib/battle';
   import { generateHumanBattler } from '$lib/battle';
-  import { linear } from 'svelte/easing';
+  import type { Manual, Attack, ManualPart } from '$lib/manuals/starterManual';
+  import { humbleAttackPool, richAttackPool, cultivationAttackPool, humblePartPool, richPartPool, cultivationPartPool, generateStarterManual, pickRandom, generateAttackSet } from '$lib/manuals/starterManual';
+  import { earthManualPool } from '$lib/manuals/manualPool';
+  
+  
  
 
   // Structure for life events awarding spendable points
@@ -16,15 +20,6 @@
     ageTrigger?: number; 
     weight?: number;     
     good?: boolean;       
-  };
-
-  type Manual = {
-    title: string;
-    equipped: boolean;
-    method: string;
-    methodInfo: string;
-    weight: number;
-    statRequirements: Record<string, number>;
   };
 
   type Treasure = {
@@ -88,14 +83,13 @@
     core: Core;
   };
 
-
-
-  let actionCount = 0;
+ 
   let activeHerbWindows: { id: number, herb: ExploreHerbEventDef }[] = [];
   let activeTreasureWindows: { id: number; treasure: Treasure | Manual; type: 'treasure' | 'manual' }[] = [];
   let activeBattleWindows: BattleEncounter[] = [];
-  $: hasStarterManual = character?.manuals?.some(m => m.title === starterManuals[character.heir]?.title) ?? false;
+  $: hasStarterManual = character?.manuals?.some(m => m.grade === 'Mortal') ?? false;
   
+  let startBackgroundMusic = false;
 
   let character: Character | null = null;
   // Selected actions for the current year
@@ -121,32 +115,7 @@
     groupedLifeEvents = [];
   }
 
-  const starterManuals: Record<string, Manual> = {
-    'Cultivation': {
-      title: 'Celestial Foundation Sutra',
-      equipped: false,
-      method: 'Orthodox',
-      methodInfo: 'A respected cultivation clan\'s beginner sutra, focusing on harmonizing qi and laying a firm foundation.',
-      weight: 0.3,
-      statRequirements: { qiAffinity: 5 }
-    },
-    'Rich': {
-      title: 'Wealth-Backed Qi Method',
-      equipped: false,
-      method: 'Orthodox',
-      methodInfo: 'A method known among aristocratic families, allowing rapid but unstable qi accumulation through lavish resources.',
-      weight: 0.3,
-      statRequirements: { qiAffinity: 3, luck: 3 }
-    },
-    'Humble': {
-      title: 'Grassroots Breathing Art',
-      equipped: false,
-      method: 'Common',
-      methodInfo: 'A basic breathing art known among peasants, simple yet steady and reliable.',
-      weight: 0.3,
-      statRequirements: { constitution: 3 }
-    }
-  };
+  
 
   // Event pools
   const childhoodEvents: LifeEventDef[] = [
@@ -593,69 +562,7 @@
     }
   ];
 
-  const cultivationManuals: Manual[] = [
-    // Orthodox Manuals
-    {
-      title: 'Flowing River Method',
-      equipped: false,
-      method: 'Orthodox',
-      methodInfo: 'A gentle orthodox method focusing on calm qi flow.',
-      weight: 0.4,
-      statRequirements: { qiAffinity: 5 }
-    },
-    {
-      title: 'Mountain Iron Scripture',
-      equipped: false,
-      method: 'Orthodox',
-      methodInfo: 'Earth-grade orthodox scripture that tempers the body.',
-      weight: 0.6,
-      statRequirements: { strength: 10 }
-    },
-    {
-      title: 'Celestial Pure Heart Sutra',
-      equipped: false,
-      method: 'Orthodox',
-      methodInfo: 'Heaven-grade orthodox sutra that harmonizes mind and qi.',
-      weight: 1,
-      statRequirements: { qiAffinity: 15, intelligence: 10 }
-    },
-
-    // Unorthodox Manuals
-    {
-      title: 'Blood Thorn Chant',
-      equipped: false,
-      method: 'Unorthodox',
-      methodInfo: 'A ruthless earth-grade unorthodox method boosting qi through pain.',
-      weight: 0.6,
-      statRequirements: { constitution: 12 }
-    },
-    {
-      title: 'Bone Whispering Method',
-      equipped: false,
-      method: 'Unorthodox',
-      methodInfo: 'A sinister method of earth grade, consuming one’s life for qi bursts.',
-      weight: 0.6,
-      statRequirements: { constitution: 12 }
-    },
-
-    // Very Rare Manuals
-    {
-      title: 'Demon Emperor Scripture',
-      equipped: false,
-      method: 'Demon',
-      methodInfo: 'Forbidden demon method corrupting qi into demonic energy.',
-      weight: 1.5,
-      statRequirements: { strength: 15, qiAffinity: 15 }
-    },
-    {
-      title: 'Sky Immortal Sutra',
-      equipped: false,
-      method: 'Heaven',
-      methodInfo: 'Heaven-grade rare manual believed to lead to immortality itself.',
-      weight: 2,
-      statRequirements: { qiAffinity: 18, intelligence: 15 }
-    }
-  ];
+  
 
   const artifactTreasures: Treasure[] = [
     // Heaven Grade (2)
@@ -810,7 +717,7 @@
 
   //pool combinations
   const treasurePools = [...swordTreasures, ...artifactTreasures];
-  const manualPools = [...cultivationManuals];
+  const manualPools = [...earthManualPool];
 
   // Choose up to 3 actions per year
     // Choose up to 3 actions per year (duplicates allowed)
@@ -1067,12 +974,53 @@
   $: equippedManual = character?.manuals
     ? character.manuals.find(m => m.equipped)?.title ?? 'None'
     : 'No Manual Equipped';
-  $: equippedManualMethod = character?.manuals
-    ? character.manuals.find(m => m.equipped)?.method ?? 'None'
-    : 'No Manual Equipped';
   $: equippedTreasure = character?.treasures
     ? character.treasures.find(t => t.equipped)?.name ?? 'None'
     : 'No Treasure Equipped';
+
+  function handleGatherQi() {
+    // 1. Find the equipped manual
+    const manual: Manual | undefined =
+      character.manuals.find(m => m.equipped);
+    if (!manual) {
+      console.warn('No manual equipped – cannot gather Qi');
+      return;
+    }
+
+    // 2. Pull your affinity stat (adjust this line if you store it elsewhere)
+    const qiAffinity = character.stats['qiAffinity'] ?? 0;
+
+    // 3. Sum up (statValue * multiplier) for each entry in methodStats
+
+    const roll = (Math.random() * 100) + luck;
+    
+    let totalGain = 0;
+    for (const [statName, multiplier] of Object.entries(manual.methodStats)) {
+      const statValue = character.stats[statName] ?? 0;
+      totalGain += statValue * multiplier;
+    }
+    // 4. Add half your qiAffinity
+    totalGain += qiAffinity / 2;
+    totalGain *= realmNumber;
+
+    if (roll >= 95) {
+      totalGain *= 2.5
+    } else if (roll >= 75) {
+      totalGain *= 2.0
+    }else if (roll >= 65){
+      totalGain *= 1.65
+    }else if (roll >= 45){
+      totalGain *= 1.3
+    } else {
+      totalGain = totalGain;
+    }
+
+    // 5. Increment Qi and persist
+    character.qiPoints = (character.qiPoints ?? 0) + totalGain;
+    saveCharacter();
+
+    console.log(`Gathered ${totalGain} Qi (incl. affinity bonus)`);
+  }
 
 
   // Allocate unallocated points to stats
@@ -1130,108 +1078,7 @@
       break;
       
    case 'Gather Qi':
-    if (equippedManual === "Grassroots Breathing Art") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.3 * realmNumber);
-
-    } else if (equippedManual === "Wealth-Backed Qi Method") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.5 * (realmNumber + 1));
-
-    } else if (equippedManual === "Celestial Foundation Sutra") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
-
-    } else if (equippedManual === "Flowing River Method") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.5 * realmNumber);
-
-    } else if (equippedManual === "Mountain Iron Scripture") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.7 * realmNumber);
-      character.qiPoints += Math.round(getEffectiveStat('constitution') * 0.5);
-
-    } else if (equippedManual === "Celestial Pure Heart Sutra") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 2.2 * realmNumber);
-      character.qiPoints += Math.round(getEffectiveStat('intelligence') * 0.7);
-
-    } else if (equippedManual === "Blood Thorn Chant") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.9 * realmNumber);
-      character.lostHealth += 5;
-
-    } else if (equippedManual === "Bone Whispering Method") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
-      character.stats.constitution = Math.max(1, Math.floor(getEffectiveStat('constitution') * 0.9));
-
-    } else if (equippedManual === "Demon Emperor Scripture") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 3.2 * realmNumber);
-      character.qiPoints += Math.round(getEffectiveStat('strength') * 0.8);
-      character.lostHealth += Math.round(baseStatsOf.health * 0.2);
-
-    } else if (equippedManual === "Sky Immortal Sutra") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 3 * realmNumber);
-      character.qiPoints += Math.round(getEffectiveStat('intelligence') * 0.9);
-
-    } else if (equippedTreasure === "Rustling Bamboo Sword") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
-
-    } else if (equippedTreasure === "Cloud Drizzle Sword") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.3 * realmNumber);
-
-    } else if (equippedTreasure === "Emerald Fang Sword") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.25 * realmNumber);
-
-    } else if (equippedTreasure === "Tiger Roar Sword") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.7 * realmNumber);
-      character.usedStam += 5;
-
-    } else if (equippedTreasure === "Celestial Phoenix Blade") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 2.5 * realmNumber);
-      character.qiPoints += Math.round(getEffectiveStat('intelligence') * 0.5);
-
-    } else if (equippedTreasure === "Nine Heavens Mirror") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 2.5 * realmNumber);
-      character.qiPoints += Math.round(getEffectiveStat('luck') * 0.5);
-
-    } else if (equippedTreasure === "Void Suppressing Bell") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 2.4 * realmNumber);
-
-    } else if (equippedTreasure === "Dragon Coiling Banner") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
-
-    } else if (equippedTreasure === "Soul Shaking Gong") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
-      character.qiPoints += Math.round(getEffectiveStat('luck') * 0.2);
-
-    } else if (equippedTreasure === "Spirit Guard Talisman") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
-
-    } else if (equippedTreasure === "Blazing Fire Banner") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.8 * realmNumber);
-      character.qiPoints += Math.round(getEffectiveStat('strength') * 0.3);
-
-    } else if (equippedTreasure === "Reflecting Mist Mirror") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
-
-    } else if (equippedTreasure === "Stone Chime Bell") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
-
-    } else if (equippedTreasure === "Amber Seal") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
-
-    } else if (equippedTreasure === "Wood Spirit Drum") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
-      character.qiPoints += Math.round(getEffectiveStat('strength') * 0.1);
-
-    } else if (equippedTreasure === "Silk Binding Banner") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
-
-    } else if (equippedTreasure === "Moonlight Reflecting Flag") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
-
-    } else if (equippedTreasure === "Iron Whisper Talisman") {
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.2 * realmNumber);
-      character.qiPoints += Math.round(getEffectiveStat('intelligence') * 0.1);
-
-    } else {
-      // No bonuses applied (default fallback)
-      character.qiPoints += Math.round(getEffectiveStat('qiAffinity') * 1.0 * realmNumber);
-    }
+    handleGatherQi();
 
     // Ensure not over capacity
     if (character.qiPoints >= character.qiCapacity) {
@@ -1255,13 +1102,13 @@
           character.stats.intelligence += 2;
           character.stats.luck += 2;
           character.qiPoints += Math.floor(character.qiCapacity / 10);
-        } else if ((eRoll >= 94) && (eRoll < 99)) {
+        } else if ((eRoll >= 89) && (eRoll < 99)) {
           //treasure
           triggerTreasureEvent();
-        } else if ((eRoll >= 69) && (eRoll < 94)) {
+        } else if ((eRoll >= 64) && (eRoll < 89)) {
           //herb
           triggerHerbEvent();
-        } else if ((eRoll >= 39) && (eRoll < 69)) {
+        } else if ((eRoll >= 39) && (eRoll < 64)) {
           //battle
 
           triggerBattleEvent();
@@ -1311,6 +1158,9 @@
    
   // Advance one year and award points
   function advanceYear() {
+    console.log(character.manuals[0])
+
+    
     if (!character) return;
     character.age++;
 
@@ -1381,6 +1231,8 @@
       goto('/');
       return;
     }
+
+    
     character = JSON.parse(stored);
     character.age ??= 0;
     character.spiritstones ??= 0;
@@ -1390,6 +1242,7 @@
     character.lostHealth ??= 0;
     character.manuals ??= [];
     character.treasures ??= [];
+    character.heir ??= 'Humble';
     if (!Array.isArray(character.stage) || character.stage.length !== 12) {
       character.stage = Array(12).fill(false);
 
@@ -1400,6 +1253,8 @@
       saveCharacter();
     }
     
+    
+
   });
 
 
@@ -1410,24 +1265,33 @@
     document.getElementById( 'learn-cultivation' ).style.display = 'none';
   }
 
-  function addBasicQiManual() {
-    if (!character || !character.heir) return;
+  function addBasicQiManual(): void {
+    const heirType = character.heir as 'humble' | 'rich' | 'cultivation';
+    console.log('[addBasicQiManual] heirType:', heirType);
 
-    const newManual = starterManuals[character.heir];
+    if (!character) return;
+
+    // Pass the heir union directly, not its toString()
+    const newManual = generateStarterManual(character.heir);
     if (!newManual) return;
 
+    // Avoid duplicates
     if (character.manuals.some(m => m.title === newManual.title)) return;
 
+    // Add to character manuals
     character.manuals = [...character.manuals, newManual];
 
+    // Log the inheritance event
     character.lifeEvents.unshift({
       id: Date.now(),
       title: `Age 5: Inherited ${newManual.title}`,
-      description: `You received your family's ${newManual.method} method: ${newManual.title}.`,
-      date: new Date().toISOString()
+      // use methodDescription (or whatever property describes the method)
+      description: `You received your family's ${newManual.methodDescription} method: ${newManual.title}.`,
+      date: new Date().toISOString(),
     });
 
-  saveCharacter();
+    // Persist your change
+    saveCharacter();
   }
 
   function equipManual(manualTitle: string) {
@@ -1699,7 +1563,7 @@
     }
 
     return {
-      health: Math.round((battler.stats.constitution ?? 0) * 4 * realmMultiplier),
+      health: Math.round((battler.stats.constitution * 2) + 1) * ((realmNumber) + (battler.stats.strength * 2)),
       stamina: Math.round((((battler.stats.constitution ?? 0) + (battler.stats.dexterity ?? 0)) / 2) * realmMultiplier),
       dodge: ((((battler.stats.dexterity ?? 0) / 8) * realmMultiplier) / 2 / 1000).toFixed(2),
       pAttack: Math.round((battler.stats.strength ?? 0) * 2 * realmMultiplier),
@@ -1713,11 +1577,14 @@
 
 
   $: realmNumber = character
-  ? character.stage.findIndex(flag => flag === true) : 0;
+  ? character.stage.findIndex(flag => flag === true): 0;
+
+   $: shownRealmNumber = character
+  ? character.stage.findIndex(flag => flag === true) - 1: 0;
 
   $: baseStatsOf = character
   ? {
-      health: Math.round(getEffectiveStat('constitution') * 4 * realmNumber),
+      health: Math.round((getEffectiveStat('constitution') * 2) + 1) * ((realmNumber) + (getEffectiveStat('strength') * 2)),
       stamina: Math.round(((getEffectiveStat('constitution') + getEffectiveStat('dexterity')) / 2) * realmNumber),
       dodge: ((((getEffectiveStat('dexterity') / 8) * realmNumber) / 2) / 1000).toFixed(2),
       pAttack: Math.round(getEffectiveStat('strength') * 2 * realmNumber),
@@ -1860,11 +1727,12 @@
 </script>
 
 <main>
+
   {#if character}
     <div class="character-info-container">
       <h1>🌿 Life of {character.name}</h1>
       <p>Age: {character.age}</p>
-      <p>Realm: {realmNumber - 1}</p>
+      <p>Realm: {shownRealmNumber}</p>
       {#if character.body}
         <p>Body: {character.body.grade}</p>
         <p>{character.body.description}</p>
@@ -2072,14 +1940,45 @@
       {#if character.manuals}
         {#each character.manuals as manual}
         <div style="margin: 1rem; padding: 1rem; background-color: #999; border-radius: 0.75rem;">
-          <p>Manual: {manual.title}</p>
-          <p>Method: {manual.methodInfo}</p>
-          <h3>Requirements:</h3>
-          <ul>
-            {#each Object.entries(manual.statRequirements) as [stat, req]}
-              <li>{stat}: {character?.stats?.[stat] ?? 0} / {req}</li>
-            {/each}
-           </ul>
+          <h3>{manual.title}</h3>
+          <p>{manual.description}</p>
+          <p>Grade: <strong>{manual.grade}</strong></p>
+          <div>
+            <p>Method: {manual.methodDescription}</p>
+            <ul style="padding-left: 0; list-style: none;">
+              {#each Object.entries(manual.methodStats) as [stat, req]}
+                  <li>{capitalize(stat)} * {req}</li>
+              {/each}
+            </ul>
+          </div>
+          <div>
+            <h3>Requirements:</h3>
+            <ul style="padding-left: 0; list-style: none;">
+              {#each Object.entries(manual.statRequirements) as [stat, req]}
+                {#if (character?.stats?.[stat] > req)}
+                <li style="text-align: left;">{capitalize(stat)}: {character?.stats?.[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
+                {:else}
+                <li style="text-align: left;">{capitalize(stat)}: {character?.stats?.[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
+                {/if}
+              {/each}
+            </ul>
+            <button popovertarget="attacks-{manual.description}" style="float: right;">Attacks</button>
+          </div>
+          <div popover id="attacks-{manual.description}" style="background-color: #999;">
+            <h3>{manual.title}</h3>
+            <div style="padding: 0.5rem; margin: 1rem; background-color: whitesmoke; border-radius: 0.75rem">
+              {#each manual.attacks as attack}
+              <div style="padding: 0.5rem; margin: 1rem; background-color: #999; border-radius: 0.75rem">
+              <strong><p>{capitalize(attack.name)}</p></strong> 
+              <p>Damage: {attack.dmg}</p>
+              <strong><p>Cost</p></strong>
+              <p>Stamina: {attack.staminaCost}</p>
+              <p>Qi: {Math.round(attack.qiCost * 100)}%</p>
+              <p>Type: {capitalize(attack.t)}</p>
+            </div>
+              {/each}
+            </div>
+          </div>
           {#if manual.equipped}
             <p style="color: green;">Equipped</p>
           {:else}
@@ -2132,157 +2031,193 @@
       {:else}
         <p>No Treasures Acquired</p>
       {/if}
-  <button popovertarget="treasures">Exit</button>
-</div>
+      <button popovertarget="treasures">Exit</button>
+    </div>
+
+      {#if (activeBattleWindows.length > 0)}
+        <audio id="btl-music-1" autoplay loop>
+          <source src="/music/bloodcry-clemens-ruh.mp3" type="audio/mpeg" />
+          Your browser does not support the audio element.
+        </audio>
+      {/if}
+
+      {#if activeBattleWindows.length === 0}
+          {#if character.stage[1]}
+            <audio id="bg-music-1" autoplay loop>
+              <source src="/music/whispers-of-the-forest-stocktune.mp3" type="audio/mpeg" />
+              Your browser does not support the audio element.
+            </audio>
+          {/if}
+          {#if character.stage[2]}
+          <audio id="bg-music-2"autoplay loop>
+            <source src="/music/whispers-of-the-ancient-pines-stocktune.mp3" type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+          {/if}
+          {#if character.stage[3]}
+          <audio id="bg-music-2"autoplay loop>
+            <source src="/music/whispers-of-the-yangtze-stocktune.mp3" type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+          {/if}
+      {/if}
+    
+
   {/if}
 
   <!-- Herb Collection Windows -->
-{#each activeHerbWindows as window (window.id)}
-  <div class="herb-window">
-    <h2>Age {character?.age}: {window.herb.name}</h2>
-    <p>{window.herb.description}</p>
-    <h3>Stat Requirements:</h3>
-    <ul>
-      {#each Object.entries(window.herb.statRequirements) as [stat, req]}
-        <li>{stat}: {character?.stats?.[stat] ?? 0} / {req}</li>
-      {/each}
-    </ul>
-    <button onclick={() => collectHerb(window.id)} disabled={!canCollectHerb(window.herb)}>Collect</button>
-    <button onclick={() => giveUpHerb(window.id)}>Give Up</button>
-  </div>
-{/each}
-
-<!-- Treasure or Manual Collection Windows -->
-<!-- Treasure or Manual Collection Windows -->
-{#each activeTreasureWindows as win (win.id)}
-  <div class="treasure-window">
-    {#if win.type === 'treasure'}
-      <h2>{win.treasure.name}</h2>
-      <p>{win.treasure.description}</p>
-      <p><strong>Grade:</strong> {win.treasure.grade}</p>
-      <p><strong>Inheritance:</strong> {win.treasure.inheritanceOf}</p>
-
-      <h3>Stats:</h3>
+  {#each activeHerbWindows as window (window.id)}
+    <div class="herb-window">
+      <h2>Age {character?.age}: {window.herb.name}</h2>
+      <p>{window.herb.description}</p>
+      <h3>Stat Requirements:</h3>
       <ul>
-        {#each Object.entries(win.treasure.stats) as [stat, value]}
-          <li>{stat}: +{value}</li>
-        {/each}
-      </ul>
-
-      <h3>Requirements:</h3>
-      <ul>
-        {#each Object.entries(win.treasure.statRequirements) as [stat, req]}
+        {#each Object.entries(window.herb.statRequirements) as [stat, req]}
           <li>{stat}: {character?.stats?.[stat] ?? 0} / {req}</li>
         {/each}
       </ul>
+      <button onclick={() => collectHerb(window.id)} disabled={!canCollectHerb(window.herb)}>Collect</button>
+      <button onclick={() => giveUpHerb(window.id)}>Give Up</button>
+    </div>
+  {/each}
 
-    {:else if win.type === 'manual'}
-      <h2>{win.treasure.title}</h2>
-      <p>{win.treasure.methodInfo}</p>
-      <p><strong>Method Type:</strong> {win.treasure.method}</p>
+  <!-- Treasure or Manual Collection Windows -->
+  <!-- Treasure or Manual Collection Windows -->
+  {#each activeTreasureWindows as win (win.id)}
+    <div class="treasure-window">
+      {#if win.type === 'treasure'}
+        <h2>{win.treasure.name}</h2>
+        <p>{win.treasure.description}</p>
+        <p><strong>Grade:</strong> {win.treasure.grade}</p>
+        <p><strong>Inheritance:</strong> {win.treasure.inheritanceOf}</p>
 
-      <h3>Requirements:</h3>
-      <ul>
-        {#each Object.entries(win.treasure.statRequirements) as [stat, req]}
-          <li>{stat}: {character?.stats?.[stat] ?? 0} / {req}</li>
-        {/each}
-      </ul>
-    {/if}
-
-    <button onclick={() => collectTreasure(win.id)}>Collect</button>
-    <button onclick={() => giveUpTreasure(win.id)}>Give Up</button>
-  </div>
-{/each}
-
-<!-- battle windows -->
-{#each activeBattleWindows as window (window.id)}
-  <div class="battle-window">
-    <h2 style="background-color: lightyellow; color: black;">{window.enemy.encounterDescription}</h2>
-    <div class="grid">
-
-      <!-- Enemy Info -->
-      <div class="battle-enemy-info-container" style="grid-area: e;">
-        <h3>{window.enemy.name}</h3>
-        <p>Realm: {window.enemy.stage}</p>
-        <p>Qi: {window.enemy.qiPoints} / {window.enemy.qiCapacity}</p>
-        <p>Age: {window.enemy.age}</p>
-
-        <h3>Stats</h3>
+        <h3>Stats:</h3>
         <ul>
-          <li><strong>Health:</strong> {window.enemy.curHealth}/{window.stats.health}</li>
-          <li><strong>Qi:</strong> {Math.round(window.enemy.qiPoints)}/{Math.round(window.enemy.qiCapacity)}</li>
-          <li><strong>Stamina:</strong> {window.enemy.curStam}/{window.stats.stamina}</li>
-          <li><strong>Physical Attack:</strong> {window.stats.pAttack}</li>
-          <li><strong>Spiritual Attack:</strong> {window.stats.sAttack}</li>
-          <li><strong>Physical Defense:</strong> {window.stats.pDef}</li>
-          <li><strong>Spiritual Defense:</strong> {window.stats.sDef}</li>
-          <li><strong>Dodge:</strong> {window.stats.dodge}%</li>
-          <li><strong>Persuasion:</strong> {window.stats.persuasion}%</li>
-        </ul>
-
-        <h4>Attacks:</h4>
-        <ul>
-          {#each window.enemy.attack as attack}
-            <li>{attack.name}</li>
+          {#each Object.entries(win.treasure.stats) as [stat, value]}
+            <li>{stat}: +{value}</li>
           {/each}
         </ul>
 
-        <button popovertarget={"battle-enemy-more-info-" + window.id}>More Info</button>
-      </div>
-
-      <!-- Character Info -->
-      <div class="character-battle-info-container" style="grid-area: c;">
-        <h3>{character.name}</h3>
-        <p>Realm: {realmNumber}</p>
-        <p>Qi: {character.qiPoints} / {character.qiCapacity}</p>
-        <p>Age: {character.age}</p>
-
-        <h3>Stats</h3>
+        <h3>Requirements:</h3>
         <ul>
-          <li><strong>Health:</strong> {currHealth.c}/{baseStatsOf.health}</li>
-          <li><strong>Qi:</strong> {Math.round(character.qiPoints)}/{Math.round(character.qiCapacity)}</li>
-          <li><strong>Stamina:</strong> {currStam.c}/{baseStatsOf.stamina}</li>
-          <li><strong>Physical Attack:</strong> {baseStatsOf.pAttack}</li>
-          <li><strong>Spiritual Attack:</strong> {baseStatsOf.sAttack}</li>
-          <li><strong>Physical Defense:</strong> {baseStatsOf.pDef}</li>
-          <li><strong>Spiritual Defense:</strong> {baseStatsOf.sDef}</li>
-          <li><strong>Dodge:</strong> {baseStatsOf.dodge}%</li>
-          <li><strong>Persuasion:</strong> {baseStatsOf.persuasion}%</li>
-          <li><strong>Chance:</strong> {luck}%</li>
+          {#each Object.entries(win.treasure.statRequirements) as [stat, req]}
+            <li>{stat}: {character?.stats?.[stat] ?? 0} / {req}</li>
+          {/each}
         </ul>
-      </div>
-    </div>
 
-    <!-- Battle Action Buttons -->
-    <div style="grid-area: f;">
-      <button onclick={() => resolveBattle(window.id, 'Won')}>Win</button>
-      <button onclick={() => resolveBattle(window.id, 'Lost')}>Lose</button>
-    </div>
+      {:else if win.type === 'manual'}
+        <h2>{win.treasure.title}</h2>
+        <p>{win.treasure.methodInfo}</p>
+        <p><strong>Method Type:</strong> {win.treasure.method}</p>
 
-    <!-- Popover More Info -->
-    <div popover id={"battle-enemy-more-info-" + window.id} style="background-color: lightyellow;">
-      <h3>Attributes:</h3>
-      <ul>
-        {#each Object.entries(window.enemy.stats) as [stat, value]}
-          <li>{stat}: {value}</li>
-        {/each}
-      </ul>
-      <h3>Attacks:</h3>
-      {#each window.enemy.attack as attack}
-        <div>
-          <h4>{attack.name}</h4>
-          <ul>
-            <li>Damage: {Math.round(attack.dmg * 100)}%</li>
-            <li>Stamina Cost: {Math.round(attack.staminaCost * 100)}%</li>
-            <li>Qi Cost: {Math.round(attack.qiCost * 100)}%</li>
-            <li>Chance: {Math.round(attack.chance * 100)}%</li>
-          </ul>
+        <h3>Requirements:</h3>
+        <ul>
+          {#each Object.entries(win.treasure.statRequirements) as [stat, req]}
+            <li>{stat}: {character?.stats?.[stat] ?? 0} / {req}</li>
+          {/each}
+        </ul>
+      {/if}
+
+      <button onclick={() => collectTreasure(win.id)}>Collect</button>
+      <button onclick={() => giveUpTreasure(win.id)}>Give Up</button>
+    </div>
+  {/each}
+
+<!-- battle windows -->
+ <div class="active-battles-container"  id="active-battles-container">
+    {#each activeBattleWindows as window (window.id)}
+      <div class="battle-window">
+        <h2 style="background-color: lightyellow; color: black;">{window.enemy.encounterDescription}</h2>
+        <div class="grid">
+
+          <!-- Enemy Info -->
+          <div class="battle-enemy-info-container" style="grid-area: e;">
+            <h3>{window.enemy.name}</h3>
+            <p>Realm: {window.enemy.stage}</p>
+            <p>Qi: {window.enemy.qiPoints} / {window.enemy.qiCapacity}</p>
+            <p>Age: {window.enemy.age}</p>
+
+            <h3>Stats</h3>
+            <ul>
+              <li><strong>Health:</strong> {window.enemy.curHealth}/{window.stats.health}</li>
+              <li><strong>Qi:</strong> {Math.round(window.enemy.qiPoints)}/{Math.round(window.enemy.qiCapacity)}</li>
+              <li><strong>Stamina:</strong> {window.enemy.curStam}/{window.stats.stamina}</li>
+              <li><strong>Physical Attack:</strong> {window.stats.pAttack}</li>
+              <li><strong>Spiritual Attack:</strong> {window.stats.sAttack}</li>
+              <li><strong>Physical Defense:</strong> {window.stats.pDef}</li>
+              <li><strong>Spiritual Defense:</strong> {window.stats.sDef}</li>
+              <li><strong>Dodge:</strong> {window.stats.dodge}%</li>
+              <li><strong>Persuasion:</strong> {window.stats.persuasion}%</li>
+              <li><strong>Chance:</strong> {window.stats.chance}%</li>
+            </ul>
+
+            <h4>Attacks:</h4>
+            <ul>
+              {#each window.enemy.attack as attack}
+                <li>{attack.name}</li>
+              {/each}
+            </ul>
+
+            <button popovertarget={"battle-enemy-more-info-" + window.id}>More Info</button>
+          </div>
+
+          <!-- Character Info -->
+          <div class="character-battle-info-container" style="grid-area: c;">
+            <h3>{character.name}</h3>
+            <p>Realm: {shownRealmNumber}</p>
+            <p>Qi: {Math.round(character.qiPoints)} / {Math.round(character.qiCapacity)}</p>
+            <p>Age: {character.age}</p>
+
+            <h3>Stats</h3>
+            <ul>
+              <li><strong>Health:</strong> {currHealth.c}/{baseStatsOf.health}</li>
+              <li><strong>Qi:</strong> {Math.round(character.qiPoints)}/{Math.round(character.qiCapacity)}</li>
+              <li><strong>Stamina:</strong> {currStam.c}/{baseStatsOf.stamina}</li>
+              <li><strong>Physical Attack:</strong> {baseStatsOf.pAttack}</li>
+              <li><strong>Spiritual Attack:</strong> {baseStatsOf.sAttack}</li>
+              <li><strong>Physical Defense:</strong> {baseStatsOf.pDef}</li>
+              <li><strong>Spiritual Defense:</strong> {baseStatsOf.sDef}</li>
+              <li><strong>Dodge:</strong> {baseStatsOf.dodge}%</li>
+              <li><strong>Persuasion:</strong> {baseStatsOf.persuasion}%</li>
+              <li><strong>Chance:</strong> {luck}%</li>
+            </ul>
+          </div>
         </div>
-      {/each}
-    </div>
-  </div>
-{/each}
 
+        <!-- Battle Action Buttons -->
+        <div style="grid-area: f;">
+          <button onclick={() => resolveBattle(window.id, 'Won')}>Win</button>
+          <button onclick={() => resolveBattle(window.id, 'Lost')}>Lose</button>
+        </div>
+
+        <!-- Popover More Info -->
+        <div popover id={"battle-enemy-more-info-" + window.id} style="background-color: lightyellow;">
+          <h3>Attributes:</h3>
+          <ul>
+            {#each Object.entries(window.enemy.stats) as [stat, value]}
+              <li>{stat}: {value}</li>
+            {/each}
+          </ul>
+          <h3>Attacks:</h3>
+          {#each window.enemy.attack as attack}
+            <div>
+              <h4>{attack.name}</h4>
+              <ul>
+                <li>Damage: {Math.round(attack.dmg * 100)}%</li>
+                <li>Stamina Cost: {Math.round(attack.staminaCost * 100)}%</li>
+                <li>Qi Cost: {Math.round(attack.qiCost * 100)}%</li>
+                <li>Chance: {Math.round(attack.chance * 100)}%</li>
+              </ul>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/each}
+
+
+  </div>
+
+  
 
 
 </main>
