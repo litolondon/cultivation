@@ -1039,12 +1039,6 @@
     console.log(`Gathered ${totalGain} Qi (incl. affinity bonus)`);
   }
 
-  $: equippedManual = character?.manuals
-    ? character.manuals.find(m => m.equipped)?.title ?? 'None'
-    : 'No Manual Equipped';
-  $: equippedTreasure = character?.treasures
-    ? character.treasures.find(t => t.equipped)?.name ?? 'None'
-    : 'No Treasure Equipped';
 
   function handleGatherQi() {
     // 1. Find the equipped manual
