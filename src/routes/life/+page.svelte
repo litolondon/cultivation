@@ -104,10 +104,10 @@
   $: if (character) {
     const map = new Map<string, { event: LifeEvent; count: number }>();
     for (const ev of character.lifeEvents) {
-      if (map.has(ev.title)) {
-        map.get(ev.title)!.count += 1;
+      if (map.has(ev.description)) {
+        map.get(ev.description)!.count += 1;
       } else {
-        map.set(ev.title, { event: ev, count: 1 });
+        map.set(ev.description, { event: ev, count: 1 });
       }
     }
     groupedLifeEvents = Array.from(map.values());
@@ -978,6 +978,74 @@
     ? character.treasures.find(t => t.equipped)?.name ?? 'None'
     : 'No Treasure Equipped';
 
+  function handleTrainMeridians() {
+    // 1. Find the equipped manual
+    const manual: Manual | undefined =
+      character.manuals.find(m => m.equipped);
+    if (!manual) {
+      console.warn('No manual equipped – cannot gather Qi');
+      return;
+    }
+
+    // 2. Pull your affinity stat (adjust this line if you store it elsewhere)
+    const qiAffinity = character.stats['qiAffinity'] ?? 0;
+
+    // 3. Sum up (statValue * multiplier) for each entry in methodStats
+
+    const roll = (Math.random() * 100) + luck;
+    let result = '';
+    
+    let totalGain = 0;
+    for (const [statName, multiplier] of Object.entries(manual.methodStats)) {
+      const statValue = character.stats[statName] ?? 0;
+      totalGain += (statValue * multiplier) * 2;
+    }
+    // 4. Add half your qiAffinity
+    totalGain += qiAffinity / 2;
+    totalGain *= realmNumber;
+
+    if (roll >= 97) {
+      totalGain *= 2.5
+      result = 'You had an ephiphany during training. Your meridians glow with a radiance. Bonus: x2.5';
+    } else if (roll >= 90) {
+      result = 'The enviroment is bursting with qi. Bonus: x2';
+      totalGain *= 2.0
+    }else if (roll >= 75){
+      result = 'The words of the chant call to you. You seem to be beginning to understand something.  Bonus: x1.6';
+      totalGain *= 1.65
+    }else if (roll >= 65){
+      result = 'Your trained hard. Bonus: x1.3';
+      totalGain *= 1.3
+    } else {
+      result = 'You trained your meridians. Chanting... ' + manual.methodDescription;
+      totalGain = totalGain;
+    }
+
+    totalGain = Math.round(totalGain);
+
+    character.lifeEvents.unshift({
+            id: Date.now(),
+            title: `Age ${character.age}: Mysterious Encounter`,
+            description: ` ${result} + ${totalGain} Qi Capacity`,
+            date: new Date().toISOString()
+          });
+
+    // 5. Increment Qi and persist
+    character.qiCapacity = Math.round((character.qiCapacity ?? 0) + totalGain);
+    saveCharacter();
+
+    
+
+    console.log(`Gathered ${totalGain} Qi (incl. affinity bonus)`);
+  }
+
+  $: equippedManual = character?.manuals
+    ? character.manuals.find(m => m.equipped)?.title ?? 'None'
+    : 'No Manual Equipped';
+  $: equippedTreasure = character?.treasures
+    ? character.treasures.find(t => t.equipped)?.name ?? 'None'
+    : 'No Treasure Equipped';
+
   function handleGatherQi() {
     // 1. Find the equipped manual
     const manual: Manual | undefined =
@@ -993,6 +1061,7 @@
     // 3. Sum up (statValue * multiplier) for each entry in methodStats
 
     const roll = (Math.random() * 100) + luck;
+    let result = '';
     
     let totalGain = 0;
     for (const [statName, multiplier] of Object.entries(manual.methodStats)) {
@@ -1005,18 +1074,33 @@
 
     if (roll >= 95) {
       totalGain *= 2.5
+      result = 'You had an ephiphany during meditation. You feel the qi swirling around. Bonus: x2.5';
     } else if (roll >= 75) {
+      result = 'The enviroment is bursting with qi. Bonus: x2';
       totalGain *= 2.0
     }else if (roll >= 65){
+      result = 'The words of the chant call to you. You seem to be beginning to understand something.  Bonus: x1.6';
       totalGain *= 1.65
     }else if (roll >= 45){
+      result = 'The local sage led a group cultivation. Bonus: x1.3';
       totalGain *= 1.3
     } else {
+      result = 'You meditated. Chanting... ' + manual.methodDescription;
       totalGain = totalGain;
     }
 
+    totalGain = Math.round(totalGain);
+
+    character.lifeEvents.unshift({
+            id: Date.now(),
+            title: `Age ${character.age}: Mysterious Encounter`,
+            description: ` ${result} + ${totalGain} Qi`,
+            date: new Date().toISOString()
+          });
+    
+
     // 5. Increment Qi and persist
-    character.qiPoints = (character.qiPoints ?? 0) + totalGain;
+    character.qiPoints = Math.round((character.qiPoints ?? 0) + totalGain);
     saveCharacter();
 
     console.log(`Gathered ${totalGain} Qi (incl. affinity bonus)`);
@@ -1067,13 +1151,7 @@
       }
       break;
     case 'Train Meridians':
-      if (roll <= 30){
-        character.qiCapacity += Math.round(getEffectiveStat('qiAffinity')) * 2 * realmNumber;
-      } else if ((roll <= 95) && (roll > 30)) {
-        character.qiCapacity += Math.round(getEffectiveStat('qiAffinity')) * 1.2 * realmNumber;
-      } else if ((roll <= 100) && (roll > 95)) {
-        character.qiCapacity += Math.round(getEffectiveStat('qiAffinity')) * 0.8 * realmNumber;
-      }
+      handleTrainMeridians();
 
       break;
       
