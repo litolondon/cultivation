@@ -2241,7 +2241,7 @@
  <div class="active-battles-container"  id="active-battles-container">
     {#each activeBattleWindows as window (window.id)}
       <div class="battle-window">
-        <h2 style="background-color: lightyellow; color: black;">{window.enemy.encounterDescription}</h2>
+        <h2>{window.enemy.encounterDescription}</h2>
         <div class="grid">
 
           <!-- Enemy Info -->
@@ -2320,7 +2320,7 @@
         </div>
 
         <!-- Popover More Info -->
-        <div popover id={"battle-enemy-more-info-" + window.id} style="background-color: lightyellow; right: 0; ">
+        <div popover id={"battle-enemy-more-info-" + window.id} style="background-color: #FFF8E7 ; right: 0; ">
           <h3>Attributes:</h3>
           <ul>
             {#each Object.entries(window.enemy.stats) as [stat, value]}
@@ -2339,7 +2339,7 @@
             </div>
           {/each}
         </div>
-        <div popover id="character-more-info-battle" style="background-color: lightyellow;">
+        <div popover id="character-more-info-battle" style="background-color: #FFF8E7;">
           <h3>Attributes:</h3>
           <ul>
             {#each Object.entries(window.enemy.stats) as [stat, value]}
@@ -2378,7 +2378,7 @@
   /* Serene Dawn: #FFE4B5, #FFF8E7, #CCAF89 */
   main {
     margin: 0.75rem;
-    background-color: #333;
+    background-color: #CCAF89;
     color: black;
     display: flex;
     flex-direction: row;
@@ -2396,7 +2396,7 @@
 
   .life-events {
     border-radius: 0.75rem;
-    background-color: whitesmoke;
+    background-color: #FFE4B5;
     max-height: 320px;
     width: 100%;
     padding: 1rem;
@@ -2410,7 +2410,7 @@
     justify-content: top;
     margin-bottom: 1rem;
     padding-bottom: .5rem;
-    border-bottom: #999 solid 0.25rem;
+    border-bottom: #CCAF89 solid 0.25rem;
   }
 
   .life-events > ul {
@@ -2423,7 +2423,10 @@
 
   .life-events > ul > li {
     margin-bottom: 1rem;
-    background-color: #3A9D52;
+    background-color: #FFF8E7;
+    border: #CCAF89 1px solid;
+    border-radius: 0.5rem;
+    padding: 0.25rem;
   }
 
   .character-name {
@@ -2440,16 +2443,20 @@
   .character-info-container {
     width: 100%;
     border-radius: 0.75rem;
-    background-color: whitesmoke;
+    background-color: #FFE4B5;
     padding: 1rem;
     margin: 1rem;
   }
+
+ 
+
+
   .main-action-container {
     border-radius: 0.75rem;
-    background-color: whitesmoke;
     padding: 1rem;
     margin: 1rem;
     width: 100%;
+    background-color: #FFE4B5;
   }
 
   .selected-actions {
@@ -2464,7 +2471,7 @@
   }
 
   .selected-actions-container > ul > li  {
-    background-color: #999;
+    background-color: #FFF8E7;
     height: 2rem;
     font-size: x-large;
     font-weight:bolder;
@@ -2476,13 +2483,16 @@
 
   .selected-actions > button {
     height: 3rem;
+    background-color: #FFF8E7;
+    color: black;
+    font-weight: 600;
+    font-size: larger;
   }
 
   .actions-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.25rem;
-    
   }
 
   .actions > p {
@@ -2493,6 +2503,10 @@
     flex-grow: 1;
     width: 100%;
     height: 4rem;
+    background-color: #FFF8E7;
+    color: black;
+    font-weight: 600;
+    font-size: larger;
   }
 
   .controls  {
@@ -2505,6 +2519,11 @@
   
   .controls > button {
     height: 4rem;
+    background-color: #FFE4B5;
+    color: black;
+    font-weight: 600;
+    font-size: larger;
+  
   }
   .restart {
     width: 100%;
@@ -2513,6 +2532,10 @@
   .restart > button {
     height: 6rem;
     width: 100%;
+    background-color: #FFE4B5;
+    color: black;
+    font-weight: 600;
+    font-size: larger;
   }
 
   /* event panels
@@ -2521,17 +2544,21 @@
   } */
 
   .learn-cultivation {
-    position: absolute;
-    left: 4rem;
-    right: 4rem;
-    top: 4rem;
-    bottom: 4rem;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
-    background-color: #999;
-    border: black 0.5rem solid;
-    border-radius: 0.5rem;
-  }
+    align-items: stretch;
+    width: 100%;
+    background: #FFF8E7;
+    padding: 2rem;
+    padding-top: 0.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 500;
+    }
 
   /* button ui panels */
 .herb-window {
@@ -2543,7 +2570,7 @@
   flex-direction: column;
   align-items: stretch;
   width: 100%;
-  background: white;
+  background: #FFF8E7;
   padding: 2rem;
   padding-top: 0.5rem;
   border-radius: 8px;
@@ -2585,7 +2612,7 @@
   flex-direction: column;
   align-items: stretch;
   width: 100%;
-  background: white;
+  background-color: #FFF8E7;
   padding: 2rem;
   padding-top: 0.5rem;
   border-radius: 8px;
@@ -2606,8 +2633,10 @@
 .stats > div{
   display: flex;
   flex-direction: column;
-  border: #222 solid 1px;
+  border: #CCAF89 solid 1px;
   padding: 0.5rem;
+  background-color: #FFF8E7;
+  border-radius:0.5rem ;
 }
 
 .stats > div > ul {
@@ -2616,6 +2645,14 @@
   align-items: left;
   height: 100%;
   justify-content: space-evenly;
+
+}
+
+.stats > div > ul > li > button{
+  background-color: #CCAF89;
+  width: 5rem;
+  height: 1.5rem;
+
 }
 
 
@@ -2628,7 +2665,7 @@
   flex-direction: column;
   align-items: stretch;
   width: 100%;
-  background: white;
+  background:#FFF8E7;
   padding-top: 0.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -2638,7 +2675,7 @@
 .battle-enemy-info-container {
   display: flex;
   flex-direction: column;
-  background-color: #999;
+  background-color: #CCAF89;
   padding: 1rem;
 }
 
