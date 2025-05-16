@@ -8,7 +8,6 @@ export type Attack = {
   t: 'physical' | 'spiritual';
 };
 
-
 export type Manual = {
     title: string;
     equipped: boolean;
@@ -147,7 +146,7 @@ export const humblePartPool: ManualPart[] = [
   {
     title: 'Earthen Wall Stance',
     description: 'Brace like an ancient wall, holding fast against hardship.',
-    methodStats: { constitution: 0.50 },
+    methodStats: { constitution: 0.5 },
     methodDescription: 'Stone holds against all strain; Constitution × 0.50'
   },
   {
@@ -821,7 +820,7 @@ export function generateStarterManual(
     methodStats: part.methodStats,
     methodDescription: part.methodDescription,
     grade: 'Mortal',
-    statRequirements: part.methodStats,
+    statRequirements: {NoRequirement: -1},
     attacks,
     weight: 1
   };

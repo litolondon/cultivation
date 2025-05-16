@@ -4,7 +4,7 @@
   import { capitalize } from '$lib/helpers/capitalize';
   import type { HumanBattler, BattleEncounter } from '$lib/battle';
   import { generateHumanBattler } from '$lib/battle';
-  import type { Manual, Attack, ManualPart } from '$lib/manuals/starterManual';
+  import type { Manual, Attack, ManualPart } from '$lib/manuals/starterManual.ts';
   import { humbleAttackPool, richAttackPool, cultivationAttackPool, humblePartPool, richPartPool, cultivationPartPool, generateStarterManual, pickRandom, generateAttackSet } from '$lib/manuals/starterManual';
   import { earthManualPool } from '$lib/manuals/manualPool';
   
@@ -971,7 +971,7 @@
   }
   $: equippedManualUsage = character?.manuals
     ? character.manuals.find(m => m.equipped) ?? null
-    : 'No Manual Equipped';
+    : null;
 
   $: equippedManual = character?.manuals
     ? character.manuals.find(m => m.equipped)?.title ?? 'None'
@@ -2035,10 +2035,10 @@
             <h3>Requirements:</h3>
             <ul style="padding-left: 0; list-style: none;">
               {#each Object.entries(manual.statRequirements) as [stat, req]}
-                {#if (character?.addedStats?.[stat] >= req)}
-                <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
+                {#if (character?.stats[stat] >= req)}
+                <li style="text-align: left;">{capitalize(stat)}: {character?.stats[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
                 {:else}
-                <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
+                <li style="text-align: left;">{capitalize(stat)}: {character?.stats[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
                 {/if}
               {/each}
             </ul>
@@ -2094,10 +2094,10 @@
             <h4>Equip Requirements:</h4>
             <ul>
               {#each Object.entries(treasure.statRequirements) as [stat, req]}
-                {#if (character?.addedStats?.[stat] >= req)}
-                <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
+                {#if (character?.stats[stat] >= req)}
+                <li style="text-align: left;">{capitalize(stat)}: {character?.stats[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
                 {:else}
-                <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
+                <li style="text-align: left;">{capitalize(stat)}: {character?.stats[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
                 {/if}
               {/each}
             </ul>
@@ -2157,10 +2157,10 @@
           <h3>Stat Requirements:</h3>
           <ul>
             {#each Object.entries(window.herb.statRequirements) as [stat, req]}
-              {#if (character?.addedStats?.[stat] >= req)}
-              <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
+              {#if (character?.stats[stat] >= req)}
+              <li style="text-align: left;">{capitalize(stat)}: {character?.stats[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
               {:else}
-              <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
+              <li style="text-align: left;">{capitalize(stat)}: {character?.stats[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
               {/if}
             {/each}
           </ul>
@@ -2172,198 +2172,197 @@
     {/each}
     
 
-  {/if}
+  
 
   
 
-  <!-- Treasure or Manual Collection Windows -->
-  <!-- Treasure or Manual Collection Windows -->
-  {#each activeTreasureWindows as win (win.id)}
-    <div class="herb-window">
-      {#if win.type === 'treasure'}
-        <h2>{win.treasure.name}</h2>
-        <div class="herb-info">
-          <p>{win.treasure.description}</p>
-          <p><strong>Grade:</strong> {win.treasure.grade}</p>
-          <p><strong>Inheritance:</strong> {win.treasure.inheritanceOf}</p>
-        </div>
-       <div class="herb-req">
-          <h3>Stats:</h3>
-          <ul>
-            {#each Object.entries(win.treasure.stats) as [stat, value]}
-              <li>{stat}: +{value}</li>
-            {/each}
-          </ul>
-       </div>
+    <!-- Treasure or Manual Collection Windows -->
+    <!-- Treasure or Manual Collection Windows -->
+    {#each activeTreasureWindows as win (win.id)}
+      <div class="herb-window">
+        {#if win.type === 'treasure'}
+          <h2>{win.treasure.name}</h2>
+          <div class="herb-info">
+            <p>{win.treasure.description}</p>
+            <p><strong>Grade:</strong> {win.treasure.grade}</p>
+            <p><strong>Inheritance:</strong> {win.treasure.inheritanceOf}</p>
+          </div>
         <div class="herb-req">
-          <h3>Requirements:</h3>
-          <ul>
-            {#each Object.entries(win.treasure.statRequirements) as [stat, req]}
-              {#if (character?.addedStats?.[stat] >= req)}
-              <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
-              {:else}
-              <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
-              {/if}
-            {/each}
-          </ul>
-        </div>
-
-        
-
-      {:else if win.type === 'manual'}
-        <h2>{win.treasure.title}</h2>
-        <div class="herb-info">
-          <p>{win.treasure.methodInfo}</p>
-          <p><strong>Method Type:</strong> {win.treasure.method}</p>
-        </div>
-        
-        <div class="herb-req">
-          <h3>Requirements:</h3>
-          <ul>
-            {#each Object.entries(win.treasure.statRequirements) as [stat, req]}
-              {#if (character?.addedStats?.[stat] >= req)}
-              <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
-              {:else}
-              <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
-              {/if}
-            {/each}
-          </ul>
-        </div>
-        
-      {/if}
-
-      <button onclick={() => collectTreasure(win.id)}>Collect</button>
-      <button onclick={() => giveUpTreasure(win.id)}>Give Up</button>
-    </div>
-  {/each}
-
-<!-- battle windows -->
- <div class="active-battles-container"  id="active-battles-container">
-    {#each activeBattleWindows as window (window.id)}
-      <div class="battle-window">
-        <h2>{window.enemy.encounterDescription}</h2>
-        <div class="grid">
-
-          <!-- Enemy Info -->
-          <div class="battle-enemy-info-container" style="grid-area: e;">
-            <h3>{window.enemy.name}</h3>
-            <div>
-              <p><strong>Realm:</strong>  {window.enemy.stage}</p>
-              <p><strong>Qi:</strong> {window.enemy.qiPoints} / {window.enemy.qiCapacity}</p>
-              <p><strong>Age:</strong>{window.enemy.age}</p>
-            </div>
-            
-
-            <h3>Stats</h3>
+            <h3>Stats:</h3>
             <ul>
-              <li><strong>Health:</strong> {window.enemy.curHealth}/{window.stats.health}</li>
-              <li><strong>Qi:</strong> {Math.round(window.enemy.qiPoints)}/{Math.round(window.enemy.qiCapacity)}</li>
-              <li><strong>Stamina:</strong> {window.enemy.curStam}/{window.stats.stamina}</li>
-              <li><strong>Physical Attack:</strong> {window.stats.pAttack}</li>
-              <li><strong>Spiritual Attack:</strong> {window.stats.sAttack}</li>
-              <li><strong>Physical Defense:</strong> {window.stats.pDef}</li>
-              <li><strong>Spiritual Defense:</strong> {window.stats.sDef}</li>
-              <li><strong>Dodge:</strong> {window.stats.dodge}%</li>
-              <li><strong>Persuasion:</strong> {window.stats.persuasion}%</li>
-              <li><strong>Chance:</strong> {window.stats.chance}%</li>
-            </ul>
-
-            <h3>Attacks:</h3>
-            <ul>
-              {#each window.enemy.attack as attack}
-                <li>{attack.name}</li>
+              {#each Object.entries(win.treasure.stats) as [stat, value]}
+                <li>{stat}: +{value}</li>
               {/each}
             </ul>
-
-            <button popovertarget={"battle-enemy-more-info-" + window.id}>More Info</button>
-          </div>
-
-          <!-- Character Info -->
-          <div class="battle-enemy-info-container" style="grid-area: c;">
-            <h3>{character.name}</h3>
-            <div>
-              <p>Realm: {shownRealmNumber}</p>
-              <p>Qi: {Math.round(character.qiPoints)} / {Math.round(character.qiCapacity)}</p>
-              <p>Age: {character.age}</p>
-            </div>
-            
-
-            <h3>Stats</h3>
+        </div>
+          <div class="herb-req">
+            <h3>Requirements:</h3>
             <ul>
-              <li><strong>Health:</strong> {currHealth.c}/{baseStatsOf.health}</li>
-              <li><strong>Qi:</strong> {Math.round(character.qiPoints)}/{Math.round(character.qiCapacity)}</li>
-              <li><strong>Stamina:</strong> {currStam.c}/{baseStatsOf.stamina}</li>
-              <li><strong>Physical Attack:</strong> {baseStatsOf.pAttack}</li>
-              <li><strong>Spiritual Attack:</strong> {baseStatsOf.sAttack}</li>
-              <li><strong>Physical Defense:</strong> {baseStatsOf.pDef}</li>
-              <li><strong>Spiritual Defense:</strong> {baseStatsOf.sDef}</li>
-              <li><strong>Dodge:</strong> {baseStatsOf.dodge}%</li>
-              <li><strong>Persuasion:</strong> {baseStatsOf.persuasion}%</li>
-              <li><strong>Chance:</strong> {luck}%</li>
-            </ul>
-
-            <h3>Attacks:</h3>
-            <ul>
-              {#each equippedManualUsage.attacks as attack}
-                <li>{attack.name}</li>
+              {#each Object.entries(win.treasure.statRequirements) as [stat, req]}
+                {#if (character?.stats[stat] >= req)}
+                <li style="text-align: left;">{capitalize(stat)}: {character?.stats[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
+                {:else}
+                <li style="text-align: left;">{capitalize(stat)}: {character?.stats[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
+                {/if}
               {/each}
             </ul>
-
-            <button popovertarget="character-more-info-battle">More Info</button>
           </div>
-        </div>
 
-        <!-- Battle Action Buttons -->
-        <div style="grid-area: f;">
-          <button onclick={() => resolveBattle(window.id, 'Won')}>Win</button>
-          <button onclick={() => resolveBattle(window.id, 'Lost')}>Lose</button>
-        </div>
+          
 
-        <!-- Popover More Info -->
-        <div popover id={"battle-enemy-more-info-" + window.id} style="background-color: #FFF8E7 ; right: 0; ">
-          <h3>Attributes:</h3>
-          <ul>
-            {#each Object.entries(window.enemy.stats) as [stat, value]}
-              <li>{capitalize(stat)}: {value}</li>
-            {/each}
-          </ul>
-          <h3>Attacks:</h3>
-          {#each window.enemy.attack as attack}
-            <div>
-              <h4>{attack.name}</h4>
-              <ul>
-                <li>Damage: {Math.round(attack.dmg * 100)}%</li>
-                <li>Stamina Cost: {Math.round(attack.staminaCost)}</li>
-                <li>Qi Cost: {Math.round(attack.qiCost * 100)}%</li>
-              </ul>
-            </div>
-          {/each}
-        </div>
-        <div popover id="character-more-info-battle" style="background-color: #FFF8E7;">
-          <h3>Attributes:</h3>
-          <ul>
-            {#each Object.entries(window.enemy.stats) as [stat, value]}
-              <li>{capitalize(stat)}: {value}</li>
-            {/each}
-          </ul>
-          <h3>Attacks:</h3>
-          {#each equippedManualUsage.attacks as attack}
-            <div>
-              <h4>{attack.name}</h4>
-              <ul>
-                <li>Damage: {Math.round(attack.dmg * 100)}%</li>
-                <li>Stamina Cost: {Math.round(attack.staminaCost * 100)}%</li>
-                <li>Qi Cost: {Math.round(attack.qiCost * 100)}%</li>
-                <li>Chance: {Math.round(attack.chance * 100)}%</li>
-              </ul>
-            </div>
-          {/each}
-        </div>
+        {:else if win.type === 'manual'}
+          <h2>{win.treasure.title}</h2>
+          <div class="herb-info">
+            <p>{win.treasure.methodInfo}</p>
+            <p><strong>Method Type:</strong> {win.treasure.method}</p>
+          </div>
+          
+          <div class="herb-req">
+            <h3>Requirements:</h3>
+            <ul>
+              {#each Object.entries(win.treasure.statRequirements) as [stat, req]}
+                {#if (character?.stats[stat] >= req)}
+                <li style="text-align: left;">{capitalize(stat)}: {character?.stats[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
+                {:else}
+                <li style="text-align: left;">{capitalize(stat)}: {character?.stats[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
+                {/if}
+              {/each}
+            </ul>
+          </div>
+          
+        {/if}
+
+        <button onclick={() => collectTreasure(win.id)}>Collect</button>
+        <button onclick={() => giveUpTreasure(win.id)}>Give Up</button>
       </div>
     {/each}
 
+    <!-- battle windows -->
+      <div class="active-battles-container"  id="active-battles-container">
+        {#each activeBattleWindows as window (window.id)}
+          <div class="battle-window">
+            <h2>{window.enemy.encounterDescription}</h2>
+            <div class="grid">
 
-  </div>
+              <!-- Enemy Info -->
+              <div class="battle-enemy-info-container" style="grid-area: e;">
+                <h3>{window.enemy.name}</h3>
+                <div>
+                  <p><strong>Realm:</strong>  {window.enemy.stage}</p>
+                  <p><strong>Qi:</strong> {window.enemy.qiPoints} / {window.enemy.qiCapacity}</p>
+                  <p><strong>Age:</strong>{window.enemy.age}</p>
+                </div>
+                
+
+                <h3>Stats</h3>
+                <ul>
+                  <li><strong>Health:</strong> {window.enemy.curHealth}/{window.stats.health}</li>
+                  <li><strong>Qi:</strong> {Math.round(window.enemy.qiPoints)}/{Math.round(window.enemy.qiCapacity)}</li>
+                  <li><strong>Stamina:</strong> {window.enemy.curStam}/{window.stats.stamina}</li>
+                  <li><strong>Physical Attack:</strong> {window.stats.pAttack}</li>
+                  <li><strong>Spiritual Attack:</strong> {window.stats.sAttack}</li>
+                  <li><strong>Physical Defense:</strong> {window.stats.pDef}</li>
+                  <li><strong>Spiritual Defense:</strong> {window.stats.sDef}</li>
+                  <li><strong>Dodge:</strong> {window.stats.dodge}%</li>
+                  <li><strong>Persuasion:</strong> {window.stats.persuasion}%</li>
+                  <li><strong>Chance:</strong> {window.stats.chance}%</li>
+                </ul>
+
+                <h3>Attacks:</h3>
+                <ul>
+                  {#each window.enemy.attack as attack}
+                    <li>{attack.name}</li>
+                  {/each}
+                </ul>
+
+                <button popovertarget={"battle-enemy-more-info-" + window.id}>More Info</button>
+              </div>
+
+              <!-- Character Info -->
+              <div class="battle-enemy-info-container" style="grid-area: c;">
+                <h3>{character.name}</h3>
+                <div>
+                  <p>Realm: {shownRealmNumber}</p>
+                  <p>Qi: {Math.round(character.qiPoints)} / {Math.round(character.qiCapacity)}</p>
+                  <p>Age: {character.age}</p>
+                </div>
+                
+
+                <h3>Stats</h3>
+                <ul>
+                  <li><strong>Health:</strong> {currHealth.c}/{baseStatsOf.health}</li>
+                  <li><strong>Qi:</strong> {Math.round(character.qiPoints)}/{Math.round(character.qiCapacity)}</li>
+                  <li><strong>Stamina:</strong> {currStam.c}/{baseStatsOf.stamina}</li>
+                  <li><strong>Physical Attack:</strong> {baseStatsOf.pAttack}</li>
+                  <li><strong>Spiritual Attack:</strong> {baseStatsOf.sAttack}</li>
+                  <li><strong>Physical Defense:</strong> {baseStatsOf.pDef}</li>
+                  <li><strong>Spiritual Defense:</strong> {baseStatsOf.sDef}</li>
+                  <li><strong>Dodge:</strong> {baseStatsOf.dodge}%</li>
+                  <li><strong>Persuasion:</strong> {baseStatsOf.persuasion}%</li>
+                  <li><strong>Chance:</strong> {luck}%</li>
+                </ul>
+
+                <h3>Attacks:</h3>
+                <ul>
+                  {#each equippedManualUsage.attacks as attack}
+                    <li>{attack.name}</li>
+                  {/each}
+                </ul>
+
+                <button popovertarget="character-more-info-battle">More Info</button>
+              </div>
+            </div>
+
+            <!-- Battle Action Buttons -->
+            <div style="grid-area: f;">
+              <button onclick={() => resolveBattle(window.id, 'Won')}>Win</button>
+              <button onclick={() => resolveBattle(window.id, 'Lost')}>Lose</button>
+            </div>
+
+            <!-- Popover More Info -->
+            <div popover id={"battle-enemy-more-info-" + window.id} style="background-color:#FFF8E7 ; right: 0; ">
+              <h3>Attributes:</h3>
+              <ul>
+                {#each Object.entries(window.enemy.stats) as [stat, value]}
+                  <li>{capitalize(stat)}: {value}</li>
+                {/each}
+              </ul>
+              <h3>Attacks:</h3>
+              {#each window.enemy.attack as attack}
+                <div>
+                  <h4>{attack.name}</h4>
+                  <ul>
+                    <li>Damage: {Math.round(attack.dmg * 100)}%</li>
+                    <li>Stamina Cost: {Math.round(attack.staminaCost)}</li>
+                    <li>Qi Cost: {Math.round(attack.qiCost * 100)}%</li>
+                  </ul>
+                </div>
+              {/each}
+            </div>
+            <div popover id="character-more-info-battle" style="background-color: #FFF8E7;">
+              <h3>Attributes:</h3>
+              <ul>
+                {#each Object.entries(window.enemy.stats) as [stat, value]}
+                  <li>{capitalize(stat)}: {value}</li>
+                {/each}
+              </ul>
+              <h3>Attacks:</h3>
+              {#each equippedManualUsage.attacks as attack}
+                <div>
+                  <h4>{attack.name}</h4>
+                  <ul>
+                    <li>Damage: {Math.round(attack.dmg * 100)}%</li>
+                    <li>Stamina Cost: {Math.round(attack.staminaCost * 100)}%</li>
+                    <li>Qi Cost: {Math.round(attack.qiCost * 100)}%</li>
+                    <li>Chance: {Math.round(attack.chance * 100)}%</li>
+                  </ul>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/each}
+      </div>
+  {/if}
 
   
 
@@ -2483,7 +2482,7 @@
 
   .selected-actions > button {
     height: 3rem;
-    background-color: #FFF8E7;
+    background-color: #CCAF89;
     color: black;
     font-weight: 600;
     font-size: larger;
@@ -2503,7 +2502,7 @@
     flex-grow: 1;
     width: 100%;
     height: 4rem;
-    background-color: #FFF8E7;
+    background-color: #CCAF89;
     color: black;
     font-weight: 600;
     font-size: larger;
@@ -2543,22 +2542,27 @@
     display: none;
   } */
 
-  .learn-cultivation {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-    background: #FFF8E7;
-    padding: 2rem;
-    padding-top: 0.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    z-index: 500;
-    }
+.learn-cultivation {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  height: 568px;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  background: #FFF8E7;
+  padding: 2rem;
+  padding-top: 0.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 500;
+}
+
+.learn-cultivation > button{
+  height: 4rem;
+}
 
   /* button ui panels */
 .herb-window {
@@ -2580,6 +2584,9 @@
 
 .herb-window > button {
   height: 3rem;
+  margin-bottom: 0.75rem;
+  background-color: #CCAF89;
+  margin: 0.75rem;
 }
 
 .herb-info {
