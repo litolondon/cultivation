@@ -956,9 +956,9 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Dash through gold-tinted leaves, each step a fleeting flash.',
     methodStats: { dexterity: 1.65 },
-    methodDescription: 'Leaves shimmer with swift passage; Dexterity × 1.65',
+    methodDescription: 'Leaves shimmer with swift passage. Dexterity × 1.65',
     grade: 'Earth',
-    statRequirements: { dexterity: 1.65 },
+    statRequirements: { dexterity: 15 },
     attacks: [
       { name: 'Leaf Flash Jab',      dmg: 0.85, staminaCost: 7,  qiCost: 0.22, chance: 0.75, t: 'physical' },
       { name: 'Golden Gust Slash',   dmg: 2.00, staminaCost: 14, qiCost: 0.46, chance: 0.20, t: 'physical' },
@@ -974,9 +974,9 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Harness molten core power to fuel unstoppable fists.',
     methodStats: { strength: 1.50 },
-    methodDescription: 'Core fire ignites mighty blows; Strength × 1.50',
+    methodDescription: 'Core fire ignites mighty blows. Strength × 1.50',
     grade: 'Earth',
-    statRequirements: { strength: 1.50 },
+    statRequirements: { strength: 14 },
     attacks: [
       { name: 'Molten Punch',       dmg: 0.80, staminaCost: 6,  qiCost: 0.20, chance: 0.75, t: 'physical' },
       { name: 'Corefire Slam',       dmg: 1.60, staminaCost: 12, qiCost: 0.35, chance: 0.20, t: 'physical' },
@@ -989,9 +989,9 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Strike like a blacksmith’s hammer, forging destiny anew.',
     methodStats: { strength: 1.60 },
-    methodDescription: 'Hammer blows reshape fate itself; Strength × 1.60',
+    methodDescription: 'Hammer blows reshape fate itself. Strength × 1.60',
     grade: 'Earth',
-    statRequirements: { strength: 1.60 },
+    statRequirements: { strength: 18 },
     attacks: [
       { name: 'Anvil Jab',           dmg: 0.90, staminaCost: 7,  qiCost: 0.22, chance: 0.75, t: 'physical' },
       { name: 'Forge Crash',         dmg: 1.80, staminaCost: 13, qiCost: 0.38, chance: 0.20, t: 'physical' },
@@ -1003,10 +1003,10 @@ export const earthManualPool: Manual[] =[
     title: 'Stonecrusher Doctrine',
     equipped: false,
     description: 'Crush bedrock barriers with unparalleled brute force.',
-    methodStats: { strength: 1.70 },
-    methodDescription: 'Bedrock shatters at my will; Strength × 1.70',
+    methodStats: { strength: 1.70, constitution: 0.8 },
+    methodDescription: 'Bedrock shatters at my will. Strength × 1.70 + Constitution  x 0.8',
     grade: 'Earth',
-    statRequirements: { strength: 1.70 },
+    statRequirements: { strength: 18, constitution: 16 },
     attacks: [
       { name: 'Pebble Hammer',       dmg: 1.00, staminaCost: 8,  qiCost: 0.25, chance: 0.75, t: 'physical' },
       { name: 'Boulder Crasher',     dmg: 2.00, staminaCost: 14, qiCost: 0.40, chance: 0.20, t: 'physical' },
@@ -1019,9 +1019,9 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Seize enemies as if they were mere pebbles in your hand.',
     methodStats: { strength: 1.80 },
-    methodDescription: 'Grip bends all under my hand; Strength × 1.80',
+    methodDescription: 'Grip bends all under my hand. Strength × 1.80',
     grade: 'Earth',
-    statRequirements: { strength: 1.80 },
+    statRequirements: { strength: 21 },
     attacks: [
       { name: 'Grip Jab',            dmg: 1.10, staminaCost: 9,  qiCost: 0.28, chance: 0.75, t: 'physical' },
       { name: 'Titan Grip Slam',     dmg: 2.20, staminaCost: 15, qiCost: 0.45, chance: 0.20, t: 'physical' },
@@ -1034,9 +1034,9 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Channel peak energy to shatter all that stands before you.',
     methodStats: { strength: 1.90 },
-    methodDescription: 'Peaks fuel devastating force; Strength × 1.90',
+    methodDescription: 'Peaks fuel devastating force. Strength × 1.90',
     grade: 'Earth',
-    statRequirements: { strength: 1.90 },
+    statRequirements: { strength: 24 },
     attacks: [
       { name: 'Peak Smash',          dmg: 1.20, staminaCost: 10, qiCost: 0.30, chance: 0.75, t: 'physical' },
       { name: 'Ridgefall Crash',     dmg: 2.40, staminaCost: 16, qiCost: 0.50, chance: 0.20, t: 'physical' },
@@ -1049,9 +1049,9 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Apply unstoppable pressure like a wall of living basalt.',
     methodStats: { strength: 2.00 },
-    methodDescription: 'Basalt fortress crushes all; Strength × 2.00',
+    methodDescription: 'Basalt fortress crushes all. Strength × 2.00',
     grade: 'Earth',
-    statRequirements: { strength: 2.00 },
+    statRequirements: { strength: 28 },
     attacks: [
       { name: 'Wall Jab',           dmg: 1.30, staminaCost: 10, qiCost: 0.32, chance: 0.75, t: 'physical' },
       { name: 'Pressing Crash',      dmg: 2.60, staminaCost: 17, qiCost: 0.52, chance: 0.20, t: 'physical' },
@@ -1064,9 +1064,9 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Smash forward with the unyielding force of molten iron.',
     methodStats: { strength: 2.10 },
-    methodDescription: 'Iron melts under my assault; Strength × 2.10',
+    methodDescription: 'Iron melts under my assault. Strength × 2.10',
     grade: 'Earth',
-    statRequirements: { strength: 2.10 },
+    statRequirements: { strength: 28 },
     attacks: [
       { name: 'Iron Punch',         dmg: 1.40, staminaCost: 11, qiCost: 0.34, chance: 0.75, t: 'physical' },
       { name: 'Molten Wall Strike',  dmg: 2.80, staminaCost: 17, qiCost: 0.54, chance: 0.20, t: 'physical' },
@@ -1078,10 +1078,10 @@ export const earthManualPool: Manual[] =[
     title: 'Corebreaker Technique',
     equipped: false,
     description: 'Strike the enemy’s core with unrelenting seismic force.',
-    methodStats: { strength: 2.20 },
-    methodDescription: 'Seismic strike crushes core; Strength × 2.20',
-    grade: 'Earth',
-    statRequirements: { strength: 2.20 },
+    methodStats: { strength: 1.5, qiAffinity: 1.5, luck: 0.3 },
+    methodDescription: 'Seismic strike crushes core. Strength × 2.20 + Qi Affinity x 1.0 + 0.3',
+  grade: 'Earth',
+    statRequirements: { strength: 18, qiAffinity: 15, luck: 8 },
     attacks: [
       { name: 'Seismic Jab',        dmg: 1.50, staminaCost: 12, qiCost: 0.36, chance: 0.75, t: 'physical' },
       { name: 'Fault Crush Wave',   dmg: 3.00, staminaCost: 18, qiCost: 0.55, chance: 0.20, t: 'physical' },
@@ -1093,10 +1093,10 @@ export const earthManualPool: Manual[] =[
     title: 'Earthmover Mastery',
     equipped: false,
     description: 'Move mountains with each swing of your hardened limbs.',
-    methodStats: { strength: 2.30 },
-    methodDescription: 'Mountains yield before my might; Strength × 2.30',
+    methodStats: { strength: 1.5, charisma: 0.8 },
+    methodDescription: 'Mountains yield before my might. Strength × 1.5 + Charisma x 0.8',
     grade: 'Earth',
-    statRequirements: { strength: 2.30 },
+    statRequirements: { strength: 2.30, charisma: 20 },
     attacks: [
       { name: 'Mountain Swing',     dmg: 1.60, staminaCost: 12, qiCost: 0.38, chance: 0.75, t: 'physical' },
       { name: 'Earthmover Crash',    dmg: 3.20, staminaCost: 18, qiCost: 0.55, chance: 0.20, t: 'physical' },
@@ -1108,10 +1108,10 @@ export const earthManualPool: Manual[] =[
     title: 'Forgeheart Discipline',
     equipped: false,
     description: 'Temper your resolve in inner flames for peak durability.',
-    methodStats: { strength: 2.40 },
-    methodDescription: 'Flames forge unbreakable flesh; Strength × 2.40',
+    methodStats: { strength: 1.6 },
+    methodDescription: 'Flames forge unbreakable flesh. Strength × 1.6',
     grade: 'Earth',
-    statRequirements: { strength: 2.40 },
+    statRequirements: { strength: 17 },
     attacks: [
       { name: 'Forge Jab',          dmg: 1.70, staminaCost: 13, qiCost: 0.40, chance: 0.75, t: 'physical' },
       { name: 'Heartfire Slam',      dmg: 3.40, staminaCost: 18, qiCost: 0.55, chance: 0.20, t: 'physical' },
@@ -1123,10 +1123,10 @@ export const earthManualPool: Manual[] =[
     title: 'Granite Mace Unleashing',
     equipped: false,
     description: 'Swing a mighty mace of granite to shatter defenses.',
-    methodStats: { strength: 2.50 },
-    methodDescription: 'Mace swings channel stone’s weight; Strength × 2.50',
+    methodStats: { strength: 2.0 },
+    methodDescription: 'Mace swings channel stone’s weight. Strength × 2.0',
     grade: 'Earth',
-    statRequirements: { strength: 2.50 },
+    statRequirements: { strength: 29 },
     attacks: [
       { name: 'Mace Jab',               dmg: 1.00, staminaCost: 10, qiCost: 0.30, chance: 0.75, t: 'physical' },
       { name: 'Mace Smash',             dmg: 2.50, staminaCost: 16, qiCost: 0.50, chance: 0.20, t: 'physical' },
@@ -1138,10 +1138,10 @@ export const earthManualPool: Manual[] =[
     title: 'Earthshaker Sunder',
     equipped: false,
     description: 'Sunder the earth beneath your foes with unbridled fury.',
-    methodStats: { strength: 2.60 },
-    methodDescription: 'Ground shakes with my anger; Strength × 2.60',
+    methodStats: { strength: 1.65 },
+    methodDescription: 'Ground shakes with my anger. Strength × 1.65',
     grade: 'Earth',
-    statRequirements: { strength: 2.60 },
+    statRequirements: { strength: 16 },
     attacks: [
       { name: 'Sunder Jab',            dmg: 1.10, staminaCost: 11, qiCost: 0.32, chance: 0.75, t: 'physical' },
       { name: 'Sunder Slash',          dmg: 2.60, staminaCost: 17, qiCost: 0.52, chance: 0.20, t: 'physical' },
@@ -1150,13 +1150,13 @@ export const earthManualPool: Manual[] =[
     weight: 0.38
   },
   {
-    title: 'Boulderthrower Art',
+    title: 'Worldthrower Art',
     equipped: false,
-    description: 'Hurl massive boulders with precision born of raw power.',
-    methodStats: { strength: 2.70 },
-    methodDescription: 'Boulders obey my will; Strength × 2.70',
-    grade: 'Earth',
-    statRequirements: { strength: 2.70 },
+    description: 'Hurl thoughts themselves with precision born of raw power.',
+    methodStats: { strength: 4.0 },
+    methodDescription: 'Boulders obey my will. Strength × 4.0',
+    grade: 'Heaven',
+    statRequirements: { strength: 48 },
     attacks: [
       { name: 'Pebble Toss',           dmg: 0.90, staminaCost: 9,  qiCost: 0.28, chance: 0.75, t: 'physical' },
       { name: 'Boulder Hurl',          dmg: 2.70, staminaCost: 17, qiCost: 0.54, chance: 0.20, t: 'physical' },
@@ -1165,13 +1165,13 @@ export const earthManualPool: Manual[] =[
     weight: 0.37
   },
   {
-    title: 'Quarrymaster Onslaught',
+    title: 'Lostmaster Onslaught',
     equipped: false,
     description: 'Unleash an onslaught worthy of the deepest quarries.',
-    methodStats: { strength: 2.80 },
-    methodDescription: 'Quarries bow to each strike; Strength × 2.80',
+    methodStats: { strength: 2.2, luck: 1.8 },
+    methodDescription: 'Quarries bow to each strike. Strength × 2.2 + Luck x 1.8',
     grade: 'Earth',
-    statRequirements: { strength: 2.80 },
+    statRequirements: { strength: 2.2, luck: 1.8 },
     attacks: [
       { name: 'Stone Chip Strike',     dmg: 1.00, staminaCost: 10, qiCost: 0.30, chance: 0.75, t: 'physical' },
       { name: 'Quarry Slam',           dmg: 2.80, staminaCost: 18, qiCost: 0.55, chance: 0.20, t: 'physical' },
@@ -1184,9 +1184,9 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Wield the might to crush worlds with a single blow.',
     methodStats: { strength: 2.90 },
-    methodDescription: 'World bends under my might; Strength × 2.90',
+    methodDescription: 'World bends under my might. Strength × 2.90',
     grade: 'Earth',
-    statRequirements: { strength: 2.90 },
+    statRequirements: { strength: 40 },
     attacks: [
       { name: 'Crushing Punch',        dmg: 1.20, staminaCost: 10, qiCost: 0.32, chance: 0.75, t: 'physical' },
       { name: 'Global Impact',         dmg: 3.00, staminaCost: 18, qiCost: 0.55, chance: 0.20, t: 'physical' },
@@ -1201,9 +1201,9 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Merge your breath with lotus qi, harmonizing life force.',
     methodStats: { qiAffinity: 1.50 },
-    methodDescription: 'Lotus breath awakens inner stream; QiAffinity × 1.50',
+    methodDescription: 'Lotus breath awakens inner stream. QiAffinity × 1.50',
     grade: 'Earth',
-    statRequirements: { qiAffinity: 1.50 },
+    statRequirements: { qiAffinity: 14 },
     attacks: [
       { name: 'Qi Seed Pulse',          dmg: 0.80, staminaCost: 6,  qiCost: 0.20, chance: 0.75, t: 'spiritual' },
       { name: 'Lotus Wave Eruption',    dmg: 2.00, staminaCost: 12, qiCost: 0.40, chance: 0.20, t: 'spiritual' },
@@ -1215,10 +1215,10 @@ export const earthManualPool: Manual[] =[
     title: 'Ember Qi Conduit',
     equipped: false,
     description: 'Channel ember qi through vessels, igniting inner power.',
-    methodStats: { qiAffinity: 1.60 },
-    methodDescription: 'Ember qi sparks molten strength; QiAffinity × 1.60',
+    methodStats: { qiAffinity: 1.65 },
+    methodDescription: 'Ember qi sparks molten strength. QiAffinity × 1.65',
     grade: 'Earth',
-    statRequirements: { qiAffinity: 1.60 },
+    statRequirements: { qiAffinity: 16 },
     attacks: [
       { name: 'Flame Whisper Jab',      dmg: 0.85, staminaCost: 7,  qiCost: 0.22, chance: 0.75, t: 'spiritual' },
       { name: 'Inferno Wave',           dmg: 2.10, staminaCost: 13, qiCost: 0.42, chance: 0.20, t: 'spiritual' },
@@ -1227,17 +1227,17 @@ export const earthManualPool: Manual[] =[
     weight: 0.63
   },
   {
-    title: 'Stone Qi Convergence',
+    title: 'Peacock Qi Convergence',
     equipped: false,
     description: 'Focus stone qi at your core, grounding all fluctuations.',
     methodStats: { qiAffinity: 1.70 },
-    methodDescription: 'Stone qi binds unstable tides; QiAffinity × 1.70',
+    methodDescription: 'Stone qi binds unstable tides. QiAffinity × 1.70',
     grade: 'Earth',
-    statRequirements: { qiAffinity: 1.70 },
+    statRequirements: { qiAffinity: 18 },
     attacks: [
       { name: 'Gravel Qi Jab',          dmg: 0.90, staminaCost: 8,  qiCost: 0.25, chance: 0.75, t: 'spiritual' },
       { name: 'Pebble Wave Slash',      dmg: 2.30, staminaCost: 14, qiCost: 0.48, chance: 0.20, t: 'spiritual' },
-      { name: 'Cataclysmic Earth Qi',   dmg: 3.30, staminaCost: 18, qiCost: 0.55, chance: 0.05, t: 'spiritual' }
+      { name: 'Cataclysmic Qi Dive',   dmg: 3.30, staminaCost: 18, qiCost: 0.55, chance: 0.05, t: 'spiritual' }
     ],
     weight: 0.59
   },
@@ -1246,13 +1246,13 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Rotate mountain qi through limbs to unleash sweeping force.',
     methodStats: { qiAffinity: 1.80 },
-    methodDescription: 'Peaks channel boundless qi; QiAffinity × 1.80',
+    methodDescription: 'Peaks channel boundless qi. QiAffinity × 1.80',
     grade: 'Earth',
-    statRequirements: { qiAffinity: 1.80 },
+    statRequirements: { qiAffinity: 19 },
     attacks: [
       { name: 'Peak Stream Jab',        dmg: 1.00, staminaCost: 9,  qiCost: 0.28, chance: 0.75, t: 'spiritual' },
       { name: 'Ridgeline Qi Wave',      dmg: 2.50, staminaCost: 15, qiCost: 0.50, chance: 0.20, t: 'spiritual' },
-      { name: 'Summit Qi Cataclysm',    dmg: 3.40, staminaCost: 18, qiCost: 0.55, chance: 0.05, t: 'spiritual' }
+      { name: 'Summit Qi Explosion',    dmg: 3.40, staminaCost: 18, qiCost: 0.55, chance: 0.05, t: 'spiritual' }
     ],
     weight: 0.56
   },
@@ -1261,9 +1261,9 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Echo cavern qi within your pulse, amplifying resonance.',
     methodStats: { qiAffinity: 1.90 },
-    methodDescription: 'Cavern echoes strengthen flow; QiAffinity × 1.90',
+    methodDescription: 'Cavern echoes strengthen flow. QiAffinity × 1.90',
     grade: 'Earth',
-    statRequirements: { qiAffinity: 1.90 },
+    statRequirements: { qiAffinity: 24 },
     attacks: [
       { name: 'Echo Qi Jab',           dmg: 1.10, staminaCost: 10, qiCost: 0.30, chance: 0.75, t: 'spiritual' },
       { name: 'Resonance Qi Wave',     dmg: 2.60, staminaCost: 16, qiCost: 0.52, chance: 0.20, t: 'spiritual' },
@@ -1276,9 +1276,9 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Inscribe runes with qi ink, infusing glyphs with spirit power.',
     methodStats: { qiAffinity: 2.00 },
-    methodDescription: 'Glyphs pulse with infused qi; QiAffinity × 2.00',
+    methodDescription: 'Glyphs pulse with infused qi. QiAffinity × 2.00',
     grade: 'Earth',
-    statRequirements: { qiAffinity: 2.00 },
+    statRequirements: { qiAffinity: 24 },
     attacks: [
       { name: 'Rune Pulse Jab',        dmg: 1.20, staminaCost: 10, qiCost: 0.32, chance: 0.75, t: 'spiritual' },
       { name: 'Infusion Qi Burst',      dmg: 2.70, staminaCost: 17, qiCost: 0.54, chance: 0.20, t: 'spiritual' },
@@ -1291,9 +1291,9 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Channel crystal vibrations to project radiant qi beams.',
     methodStats: { qiAffinity: 2.10 },
-    methodDescription: 'Crystals refract potent qi; QiAffinity × 2.10',
+    methodDescription: 'Crystals refract potent qi. QiAffinity × 2.10',
     grade: 'Earth',
-    statRequirements: { qiAffinity: 2.10 },
+    statRequirements: { qiAffinity: 26 },
     attacks: [
       { name: 'Crystal Beam Jab',       dmg: 1.30, staminaCost: 11, qiCost: 0.34, chance: 0.75, t: 'spiritual' },
       { name: 'Radiant Qi Wave',        dmg: 2.80, staminaCost: 17, qiCost: 0.54, chance: 0.20, t: 'spiritual' },
@@ -1306,9 +1306,9 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Resonate bedrock currents to amplify earth qi beneath.',
     methodStats: { qiAffinity: 2.20 },
-    methodDescription: 'Bedrock hums with deep qi; QiAffinity × 2.20',
+    methodDescription: 'Bedrock hums with deep qi. QiAffinity × 2.20',
     grade: 'Earth',
-    statRequirements: { qiAffinity: 2.20 },
+    statRequirements: { qiAffinity: 28 },
     attacks: [
       { name: 'Resonant Jab',          dmg: 1.40, staminaCost: 12, qiCost: 0.36, chance: 0.75, t: 'spiritual' },
       { name: 'Groundwave Qi Burst',   dmg: 2.90, staminaCost: 18, qiCost: 0.55, chance: 0.20, t: 'spiritual' },
@@ -1321,9 +1321,9 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Surge molten qi through veins to erupt in fiery display.',
     methodStats: { qiAffinity: 2.30 },
-    methodDescription: 'Magma qi fuels blazing wrath; QiAffinity × 2.30',
+    methodDescription: 'Magma qi fuels blazing wrath. QiAffinity × 2.30',
     grade: 'Earth',
-    statRequirements: { qiAffinity: 2.30 },
+    statRequirements: { qiAffinity: 29 },
     attacks: [
       { name: 'Magma Pulse Jab',        dmg: 1.50, staminaCost: 13, qiCost: 0.36, chance: 0.75, t: 'spiritual' },
       { name: 'Lava Surge Wave',        dmg: 3.00, staminaCost: 18, qiCost: 0.55, chance: 0.20, t: 'spiritual' },
@@ -1335,10 +1335,10 @@ export const earthManualPool: Manual[] =[
     title: 'Seismic Qi Oscillation',
     equipped: false,
     description: 'Oscillate earth currents to send tremors through qi flow.',
-    methodStats: { qiAffinity: 2.40 },
-    methodDescription: 'Oscillations shake inner core; QiAffinity × 2.40',
+    methodStats: { qiAffinity: 2.48 },
+    methodDescription: 'Oscillations shake inner core. QiAffinity × 2.48',
     grade: 'Earth',
-    statRequirements: { qiAffinity: 2.40 },
+    statRequirements: { qiAffinity: 32 },
     attacks: [
       { name: 'Tremor Jab',            dmg: 1.60, staminaCost: 14, qiCost: 0.38, chance: 0.75, t: 'spiritual' },
       { name: 'Quake Surge Wave',      dmg: 3.10, staminaCost: 18, qiCost: 0.55, chance: 0.20, t: 'spiritual' },
@@ -1350,10 +1350,10 @@ export const earthManualPool: Manual[] =[
     title: 'Geode Qi Resonance',
     equipped: false,
     description: 'Crack geodes to unleash prismatic qi vibrations.',
-    methodStats: { qiAffinity: 2.50 },
-    methodDescription: 'Geode shards amplify mystic qi; QiAffinity × 2.50',
+    methodStats: { qiAffinity: 2.50, constitution: 1.2 },
+    methodDescription: 'Geode shards amplify mystic qi. QiAffinity × 2.5 + Constitution x 1.2',
     grade: 'Earth',
-    statRequirements: { qiAffinity: 2.50 },
+    statRequirements: { qiAffinity: 24,  constitution: 16 },
     attacks: [
       { name: 'Prism Jab',             dmg: 1.20, staminaCost: 10, qiCost: 0.32, chance: 0.75, t: 'spiritual' },
       { name: 'Shardstorm Wave',        dmg: 2.70, staminaCost: 18, qiCost: 0.55, chance: 0.20, t: 'spiritual' },
@@ -1362,13 +1362,13 @@ export const earthManualPool: Manual[] =[
     weight: 0.40
   },
   {
-    title: 'Magmatic Qi Conflagration',
+    title: 'East Wind Qi Conflagration',
     equipped: false,
     description: 'Fuse magma currents with qi for explosive power.',
-    methodStats: { qiAffinity: 2.60 },
-    methodDescription: 'Magma qi burns fierce and bright; QiAffinity × 2.60',
+    methodStats: { qiAffinity: 3.0 },
+    methodDescription: 'Qi burns fierce and bright. QiAffinity × 3',
     grade: 'Earth',
-    statRequirements: { qiAffinity: 2.60 },
+    statRequirements: { qiAffinity: 34 },
     attacks: [
       { name: 'Flare Jab',             dmg: 1.30, staminaCost: 11, qiCost: 0.34, chance: 0.75, t: 'spiritual' },
       { name: 'Infernal Wave',         dmg: 2.80, staminaCost: 18, qiCost: 0.55, chance: 0.20, t: 'spiritual' },
@@ -1377,11 +1377,11 @@ export const earthManualPool: Manual[] =[
     weight: 0.38
   },
   {
-    title: 'Terraflux Qi Overload',
+    title: 'Flux Qi Overloadd Rhythm',
     equipped: false,
     description: 'Overload earth qi channels to trigger massive tremors.',
     methodStats: { qiAffinity: 2.70 },
-    methodDescription: 'Flux tides unleash mighty tremors; QiAffinity × 2.70',
+    methodDescription: 'Flux tides unleash mighty tremors. QiAffinity × 2.7',
     grade: 'Earth',
     statRequirements: { qiAffinity: 2.70 },
     attacks: [
@@ -1392,13 +1392,13 @@ export const earthManualPool: Manual[] =[
     weight: 0.37
   },
   {
-    title: 'Lithic Qi Mastery',
+    title: 'Lilithic Qi Mastery',
     equipped: false,
     description: 'Master the stone qi to shape and unmake landscapes.',
-    methodStats: { qiAffinity: 2.80 },
-    methodDescription: 'Stone qi bends earth itself; QiAffinity × 2.80',
+    methodStats: { qiAffinity: 2.80, luck: 1.2, constitution: 0.8 },
+    methodDescription: 'Stone qi bends earth itself. QiAffinity × 2.8 + Luck x 1.2 + Constitution x 0.8',
     grade: 'Earth',
-    statRequirements: { qiAffinity: 2.80 },
+    statRequirements: { qiAffinity: 2.80, luck: 1.2, constitution: 0.8 },
     attacks: [
       { name: 'Mastery Jab',           dmg: 1.50, staminaCost: 13, qiCost: 0.38, chance: 0.75, t: 'spiritual' },
       { name: 'Carve Qi Wave',         dmg: 3.20, staminaCost: 18, qiCost: 0.55, chance: 0.20, t: 'spiritual' },
@@ -1411,7 +1411,7 @@ export const earthManualPool: Manual[] =[
     equipped: false,
     description: 'Forge obsidian qi blades to rend and burn your foes.',
     methodStats: { qiAffinity: 2.90 },
-    methodDescription: 'Obsidian qi sears through all; QiAffinity × 2.90',
+    methodDescription: 'Obsidian qi sears through all. QiAffinity × 2.9',
     grade: 'Earth',
     statRequirements: { qiAffinity: 2.90 },
     attacks: [
@@ -1422,15 +1422,15 @@ export const earthManualPool: Manual[] =[
     weight: 0.34
   },
 
-  //luck
+  //Heaven // Luck
   {
-    title: 'Fortune’s Whisper Codex',
+    title: 'Time’s First Codex',
     equipped: false,
-    description: 'Listen to the silent murmur of fate and bend probability.',
-    methodStats: { luck: 1.50 },
-    methodDescription: 'Whispering winds guide destiny’s favor; Luck × 1.50',
+    description: 'Listen to the silent murmur of fate and bend time.',
+    methodStats: { dexterity: 2.6 , qiAffinity: 2.8},
+    methodDescription: 'Whispering winds guide destiny’s favor. Dexterity x 2.6 + Qi Affinity x 2.8',
     grade: 'Earth',
-    statRequirements: { luck: 1.50 },
+    statRequirements: { dexterity: 33, qiAffinity: 37 },
     attacks: [
       { name: 'Chance Glimmer Jab',     dmg: 0.75, staminaCost: 5,  qiCost: 0.20, chance: 0.75, t: 'spiritual' },
       { name: 'Fortune Wave',           dmg: 1.95, staminaCost: 12, qiCost: 0.40, chance: 0.20, t: 'spiritual' },
@@ -1442,44 +1442,44 @@ export const earthManualPool: Manual[] =[
     title: 'Luckblade Grimoire',
     equipped: false,
     description: 'Edge your blade with fortune to strike beyond chance.',
-    methodStats: { luck: 1.70 },
-    methodDescription: 'Blade dances on fickle fate; Luck × 1.70',
+    methodStats: { luck: 2.4, strength: 2.3 },
+    methodDescription: 'Blade dances on fickle fate. Luck × 2.4 + Strength x 2.3',
     grade: 'Earth',
-    statRequirements: { luck: 1.70 },
+    statRequirements: { luck: 24, strength: 36 },
     attacks: [
-      { name: 'Glimmering Slash',       dmg: 0.85, staminaCost: 6,  qiCost: 0.22, chance: 0.75, t: 'physical' },
-      { name: 'Fortune’s Edge Wave',    dmg: 2.10, staminaCost: 14, qiCost: 0.45, chance: 0.20, t: 'physical' },
-      { name: 'Luckshatter Cataclysm',  dmg: 3.30, staminaCost: 18, qiCost: 0.55, chance: 0.05, t: 'physical' }
+      { name: 'Glimmering Slash',       dmg: 1.0, staminaCost: 6,  qiCost: 0.22, chance: 0.75, t: 'physical' },
+      { name: 'Fortune’s Edge',    dmg: 3.0, staminaCost: 14, qiCost: 0.45, chance: 0.20, t: 'physical' },
+      { name: 'Luckshatter Sky Slash',  dmg: 5.6, staminaCost: 18, qiCost: 0.6, chance: 0.05, t: 'physical' }
     ],
     weight: 0.59
   },
   {
-    title: 'Dicebound Ritual',
+    title: 'Void Mantra',
     equipped: false,
     description: 'Roll the unseen dice of fate to guide every movement.',
-    methodStats: { luck: 1.85 },
-    methodDescription: 'Hidden dice shape each strike; Luck × 1.85',
-    grade: 'Earth',
-    statRequirements: { luck: 1.85 },
+    methodStats: { luck: 1.5, intelligence: 1.6, dexterity: 2.0 },
+    methodDescription: 'Hidden dice shape each strike. Luck × 1.5 + Intelligence x 1.6 + Dexterity x 2.0',
+    grade: 'Heaven',
+    statRequirements: { luck: 24, intelligence: 22  ,dexterity: 26},
     attacks: [
-      { name: 'Dice Toss Jab',          dmg: 0.90, staminaCost: 7,  qiCost: 0.25, chance: 0.75, t: 'spiritual' },
-      { name: 'Fateful Chain Wave',     dmg: 2.30, staminaCost: 15, qiCost: 0.50, chance: 0.20, t: 'spiritual' },
-      { name: 'Fortunestorm Cataclysm', dmg: 3.20, staminaCost: 18, qiCost: 0.55, chance: 0.05, t: 'spiritual' }
+      { name: 'Dice Toss',          dmg: 1.4, staminaCost: 7,  qiCost: 0.1, chance: 0.75, t: 'spiritual' },
+      { name: 'Fateful Chain Chant',     dmg: 3.1, staminaCost: 15, qiCost: 0.3, chance: 0.20, t: 'spiritual' },
+      { name: 'Void Step', dmg: 5.2, staminaCost: 18, qiCost: 0.55, chance: 0.05, t: 'spiritual' }
     ],
     weight: 0.54
   },
   {
-    title: 'Serendipity Scroll',
+    title: 'Sword God-Killing Art',
     equipped: false,
     description: 'Unfold secret scrolls that weave fortunate chance.',
-    methodStats: { luck: 2.00 },
-    methodDescription: 'Serendipity guides each unfolding; Luck × 2.00',
-    grade: 'Earth',
-    statRequirements: { luck: 2.00 },
+    methodStats: { luck: 1.25, constitution: 2.2, strength: 1.2 },
+    methodDescription: 'Serendipity guides each unfolding. Luck × 1.25 + Constitution x 2 + Strength x 1.2',
+    grade: 'Heaven',
+    statRequirements: { luck: 22, constitution: 28, strength: 24},
     attacks: [
-      { name: 'Scroll Unroll Jab',     dmg: 0.95, staminaCost: 8,  qiCost: 0.28, chance: 0.75, t: 'spiritual' },
-      { name: 'Destiny Scroll Wave',   dmg: 2.50, staminaCost: 16, qiCost: 0.52, chance: 0.20, t: 'spiritual' },
-      { name: 'Serendipity Cataclysm', dmg: 3.20, staminaCost: 18, qiCost: 0.55, chance: 0.05, t: 'spiritual' }
+      { name: 'Heaven Breaking Slash',     dmg: 1.8, staminaCost: 8,  qiCost: 0.03, chance: 0.75, t: 'physical' },
+      { name: 'Destiny Scroll',   dmg: 3.4, staminaCost: 16, qiCost: 0.05, chance: 0.20, t: 'physical' },
+      { name: 'Serendipity Apocalypse', dmg: 4.4, staminaCost: 18, qiCost: 0.18, chance: 0.05, t: 'physical' }
     ],
     weight: 0.50
   },
@@ -1487,14 +1487,14 @@ export const earthManualPool: Manual[] =[
     title: 'Chaos Weaving Codex',
     equipped: false,
     description: 'Weave chaotic threads of luck to reshape outcome streams.',
-    methodStats: { luck: 2.20 },
-    methodDescription: 'Chaos guides unseen threads; Luck × 2.20',
-    grade: 'Earth',
-    statRequirements: { luck: 2.20 },
+    methodStats: { luck: 2.8, qiAffinity: 1.5, intelligence: 1.8 },
+    methodDescription: 'Chaos guides unseen threads. Luck × 2.8 + Qi Affinity x 1.5 + Intelligence x 1.8',
+    grade: 'Heaven',
+    statRequirements: { luck: 32, qiAffinity: 20, intelligence: 22},
     attacks: [
-      { name: 'Chaos Flicker Jab',      dmg: 1.00, staminaCost: 9,  qiCost: 0.30, chance: 0.75, t: 'spiritual' },
-      { name: 'Threadstorm Wave',       dmg: 2.70, staminaCost: 17, qiCost: 0.54, chance: 0.20, t: 'spiritual' },
-      { name: 'Luckquake Cataclysm',    dmg: 3.20, staminaCost: 18, qiCost: 0.55, chance: 0.05, t: 'spiritual' }
+      { name: 'Chaos Flicker',      dmg: 1.5, staminaCost: 9,  qiCost: 0.15, chance: 0.75, t: 'spiritual' },
+      { name: 'Storm Eye Chant',       dmg: 2.70, staminaCost: 17, qiCost: 0.2, chance: 0.20, t: 'spiritual' },
+      { name: 'Lucky Star Dance',    dmg: 4.0, staminaCost: 18, qiCost: 0.55, chance: 0.05, t: 'spiritual' }
     ],
     weight: 0.45
   }
