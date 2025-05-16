@@ -969,7 +969,9 @@
 
     saveCharacter();
   }
-  
+  $: equippedManualUsage = character?.manuals
+    ? character.manuals.find(m => m.equipped) ?? null
+    : 'No Manual Equipped';
 
   $: equippedManual = character?.manuals
     ? character.manuals.find(m => m.equipped)?.title ?? 'None'
@@ -1802,32 +1804,42 @@
 
   {#if character}
     <div class="character-info-container">
-      <h1>🌿 Life of {character.name}</h1>
-      <p>Age: {character.age}</p>
-      <p>Realm: {shownRealmNumber}</p>
-      {#if character.body}
-        <p>Body: {character.body.grade}</p>
-        <p>{character.body.description}</p>
-      {/if}
-      {#if character.core}
-        <p>Core: {character.core.grade}</p>
-        <p>{character.core.description}</p>
-      {/if}
-
-      <p>Lifespan: {character.stats.lifespan}</p>
-      <p>Unallocated Points: {character.unallocatedPoints}</p>
-      {#if character.age >= 5}
-        <p>Manual: {equippedManual}</p>
-      {/if}
-      {#if character.age >= 5}
-      <p>Treasure: {equippedTreasure}</p>
-      {/if}
-      <p>Spiritstones:<span style="color: blue; margin-left: 0.25rem">♦︎</span> {character.spiritstones}</p>
+      <div class="character-name">
+        <div><h1>🌿 Life of {character.name}</h1></div>
+        <div><p>Age: {character.age}</p></div>
+        <div><p>Realm: {shownRealmNumber}</p></div>
+        <div>
+          {#if character.body}
+            <p>Body: {character.body.grade}</p>
+            <p>{character.body.description}</p>
+          {/if}
+        </div>
+        <div>
+          {#if character.core}
+            <p>Core: {character.core.grade}</p>
+            <p>{character.core.description}</p>
+          {/if}
+        </div>
+        <div><p>Lifespan: {character.stats.lifespan}</p></div>
+        <div>
+          {#if character.age >= 5}
+            <p>Manual: {equippedManual}</p>
+          {/if}
+        </div>
+        <div>
+        {#if character.age >= 5}
+        <p>Treasure: {equippedTreasure}</p>
+        {/if}
+        </div>
+        <div><strong><p>Spiritstones: </strong><span style="color: blue; margin-left: 0.25rem">♦ </span>{character.spiritstones}</div>
+        <div><p>Atrribute Points: {character.unallocatedPoints}</p></div>
+        
+      </div>
 
       <section class="stats">
         <div>
-            <h3>Attributes</h3>
-            <ul>
+            <h3 style="text-decoration: underline; margin-bottom: 0.25rem;">Attributes</h3>
+            <ul style="list-style: none;">
               {#each Object.entries(character.stats) as [key, baseValue]}
                 <li>
                   <strong>
@@ -1842,7 +1854,7 @@
                       <span style="color: red;"> ({character.addedStats[key]})</span>
                     {/if}
                   </span>
-                  {#if character.unallocatedPoints > 0}
+                  {#if character.unallocatedPoints >= 0}
                     <button type="button" onclick={() => allocatePoint(key)}>
                       +1
                     </button>
@@ -1853,8 +1865,8 @@
           </div>
           
           <div>
-            <h3>Stats</h3>
-            <ul>
+            <h3 style="text-decoration: underline; margin-bottom: 0.25rem;">Stats</h3>
+            <ul style="list-style: none;">
               <li>
                 <strong>Health:</strong>
                 <span>{currHealth.c}/{baseStatsOf.health}</span>
@@ -1895,8 +1907,6 @@
                 <strong>Chance:</strong>
                 <span>{luck}%</span>
               </li>
-
-              <br />
             </ul>
           </div>
         </section>
@@ -1905,7 +1915,7 @@
 
     <section class="life-events">
       <h2>Life Events</h2>
-      <ul>
+      <ul style="list-style: none;">
         {#each groupedLifeEvents as item}
           <li>
             <strong>
@@ -1921,8 +1931,8 @@
     <div class="main-action-container">
       <!-- Action buttons to choose actions -->
       <section class="actions">
-        <h2 style="margin-bottom: 0;">Actions </h2>
-        <p style="color: red; margin-top: 0.25rem;">Choose Up To Three</p>
+        <h2>Actions </h2>
+        <p>Choose up to three</p>
         <div class="actions-container">
           {#if character.age < 5}
             {#each actionEvents5 as act}
@@ -1952,13 +1962,6 @@
       <!-- Selected actions display -->
       <section class="selected-actions">
         <h2>Selected Actions</h2>
-        <button
-          type="button"
-          onclick={clearSelectedActions}
-          disabled={selectedActions.length === 0}
-        >
-          Clear
-        </button>
         <div class="selected-actions-container">
           {#each selectedActions as act}
             <ul>
@@ -1966,10 +1969,16 @@
             </ul>
           {/each}
         </div>
+        <button
+          type="button"
+          onclick={clearSelectedActions}
+          disabled={selectedActions.length === 0}
+        >
+          Clear
+        </button>
       </section>
     </div>
 
-    <!-- Controls unchanged -->
     <div class="controls">
       {#if character.stats.lifespan > 0}
         <button onclick={advanceYear}>Next Year</button>
@@ -1978,9 +1987,6 @@
         <button popovertarget="manuals">Manuals</button>
         <button popovertarget="treasures">Treasures</button>
       {/if}
-
-        
-
       {#if (character.stage[1]) && character.qiPoints > 500}
         <button onclick={tryBreakthroughQiRef}>Breakthrough Qi Refinement</button>
       {/if}
@@ -1990,7 +1996,9 @@
       {#if (character.stage[3]) && character.qiPoints > 7500}
         <button onclick={tryBreakthroughGoldenCore}>Breakthrough Golden Core</button>
       {/if}
-
+    </div>
+    
+    <div class="restart">
       <button onclick={resetCharacter}>🔄 Reset Character</button>
     </div>
 
@@ -2027,10 +2035,10 @@
             <h3>Requirements:</h3>
             <ul style="padding-left: 0; list-style: none;">
               {#each Object.entries(manual.statRequirements) as [stat, req]}
-                {#if (character?.stats?.[stat] > req)}
-                <li style="text-align: left;">{capitalize(stat)}: {character?.stats?.[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
+                {#if (character?.addedStats?.[stat] >= req)}
+                <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
                 {:else}
-                <li style="text-align: left;">{capitalize(stat)}: {character?.stats?.[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
+                <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
                 {/if}
               {/each}
             </ul>
@@ -2086,7 +2094,11 @@
             <h4>Equip Requirements:</h4>
             <ul>
               {#each Object.entries(treasure.statRequirements) as [stat, req]}
-                <li>{stat}: {character?.stats?.[stat] ?? 0} / {req}</li>
+                {#if (character?.addedStats?.[stat] >= req)}
+                <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
+                {:else}
+                <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
+                {/if}
               {/each}
             </ul>
 
@@ -2133,61 +2145,91 @@
           </audio>
           {/if}
       {/if}
+
+            <!-- Herb Collection Windows -->
+    {#each activeHerbWindows as window (window.id)}
+      <div class="herb-window">
+        <div class="herb-info">
+          <h2>Age {character?.age}: {window.herb.name}</h2>
+          <p>{window.herb.description}</p>
+        </div>
+        <div class="herb-req">
+          <h3>Stat Requirements:</h3>
+          <ul>
+            {#each Object.entries(window.herb.statRequirements) as [stat, req]}
+              {#if (character?.addedStats?.[stat] >= req)}
+              <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
+              {:else}
+              <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
+              {/if}
+            {/each}
+          </ul>
+        </div>
+        
+        <button onclick={() => collectHerb(window.id)} disabled={!canCollectHerb(window.herb)}>Collect</button>
+        <button onclick={() => giveUpHerb(window.id)}>Give Up</button>
+      </div>
+    {/each}
     
 
   {/if}
 
-  <!-- Herb Collection Windows -->
-  {#each activeHerbWindows as window (window.id)}
-    <div class="herb-window">
-      <h2>Age {character?.age}: {window.herb.name}</h2>
-      <p>{window.herb.description}</p>
-      <h3>Stat Requirements:</h3>
-      <ul>
-        {#each Object.entries(window.herb.statRequirements) as [stat, req]}
-          <li>{stat}: {character?.stats?.[stat] ?? 0} / {req}</li>
-        {/each}
-      </ul>
-      <button onclick={() => collectHerb(window.id)} disabled={!canCollectHerb(window.herb)}>Collect</button>
-      <button onclick={() => giveUpHerb(window.id)}>Give Up</button>
-    </div>
-  {/each}
+  
 
   <!-- Treasure or Manual Collection Windows -->
   <!-- Treasure or Manual Collection Windows -->
   {#each activeTreasureWindows as win (win.id)}
-    <div class="treasure-window">
+    <div class="herb-window">
       {#if win.type === 'treasure'}
         <h2>{win.treasure.name}</h2>
-        <p>{win.treasure.description}</p>
-        <p><strong>Grade:</strong> {win.treasure.grade}</p>
-        <p><strong>Inheritance:</strong> {win.treasure.inheritanceOf}</p>
+        <div class="herb-info">
+          <p>{win.treasure.description}</p>
+          <p><strong>Grade:</strong> {win.treasure.grade}</p>
+          <p><strong>Inheritance:</strong> {win.treasure.inheritanceOf}</p>
+        </div>
+       <div class="herb-req">
+          <h3>Stats:</h3>
+          <ul>
+            {#each Object.entries(win.treasure.stats) as [stat, value]}
+              <li>{stat}: +{value}</li>
+            {/each}
+          </ul>
+       </div>
+        <div class="herb-req">
+          <h3>Requirements:</h3>
+          <ul>
+            {#each Object.entries(win.treasure.statRequirements) as [stat, req]}
+              {#if (character?.addedStats?.[stat] >= req)}
+              <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
+              {:else}
+              <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
+              {/if}
+            {/each}
+          </ul>
+        </div>
 
-        <h3>Stats:</h3>
-        <ul>
-          {#each Object.entries(win.treasure.stats) as [stat, value]}
-            <li>{stat}: +{value}</li>
-          {/each}
-        </ul>
-
-        <h3>Requirements:</h3>
-        <ul>
-          {#each Object.entries(win.treasure.statRequirements) as [stat, req]}
-            <li>{stat}: {character?.stats?.[stat] ?? 0} / {req}</li>
-          {/each}
-        </ul>
+        
 
       {:else if win.type === 'manual'}
         <h2>{win.treasure.title}</h2>
-        <p>{win.treasure.methodInfo}</p>
-        <p><strong>Method Type:</strong> {win.treasure.method}</p>
-
-        <h3>Requirements:</h3>
-        <ul>
-          {#each Object.entries(win.treasure.statRequirements) as [stat, req]}
-            <li>{stat}: {character?.stats?.[stat] ?? 0} / {req}</li>
-          {/each}
-        </ul>
+        <div class="herb-info">
+          <p>{win.treasure.methodInfo}</p>
+          <p><strong>Method Type:</strong> {win.treasure.method}</p>
+        </div>
+        
+        <div class="herb-req">
+          <h3>Requirements:</h3>
+          <ul>
+            {#each Object.entries(win.treasure.statRequirements) as [stat, req]}
+              {#if (character?.addedStats?.[stat] >= req)}
+              <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: green;">✓</span></li>
+              {:else}
+              <li style="text-align: left;">{capitalize(stat)}: {character?.addedStats?.[stat] ?? 0} / {req} <span style="color: red;">ⓧ</span></li>
+              {/if}
+            {/each}
+          </ul>
+        </div>
+        
       {/if}
 
       <button onclick={() => collectTreasure(win.id)}>Collect</button>
@@ -2205,9 +2247,12 @@
           <!-- Enemy Info -->
           <div class="battle-enemy-info-container" style="grid-area: e;">
             <h3>{window.enemy.name}</h3>
-            <p>Realm: {window.enemy.stage}</p>
-            <p>Qi: {window.enemy.qiPoints} / {window.enemy.qiCapacity}</p>
-            <p>Age: {window.enemy.age}</p>
+            <div>
+              <p><strong>Realm:</strong>  {window.enemy.stage}</p>
+              <p><strong>Qi:</strong> {window.enemy.qiPoints} / {window.enemy.qiCapacity}</p>
+              <p><strong>Age:</strong>{window.enemy.age}</p>
+            </div>
+            
 
             <h3>Stats</h3>
             <ul>
@@ -2223,7 +2268,7 @@
               <li><strong>Chance:</strong> {window.stats.chance}%</li>
             </ul>
 
-            <h4>Attacks:</h4>
+            <h3>Attacks:</h3>
             <ul>
               {#each window.enemy.attack as attack}
                 <li>{attack.name}</li>
@@ -2234,11 +2279,14 @@
           </div>
 
           <!-- Character Info -->
-          <div class="character-battle-info-container" style="grid-area: c;">
+          <div class="battle-enemy-info-container" style="grid-area: c;">
             <h3>{character.name}</h3>
-            <p>Realm: {shownRealmNumber}</p>
-            <p>Qi: {Math.round(character.qiPoints)} / {Math.round(character.qiCapacity)}</p>
-            <p>Age: {character.age}</p>
+            <div>
+              <p>Realm: {shownRealmNumber}</p>
+              <p>Qi: {Math.round(character.qiPoints)} / {Math.round(character.qiCapacity)}</p>
+              <p>Age: {character.age}</p>
+            </div>
+            
 
             <h3>Stats</h3>
             <ul>
@@ -2253,6 +2301,15 @@
               <li><strong>Persuasion:</strong> {baseStatsOf.persuasion}%</li>
               <li><strong>Chance:</strong> {luck}%</li>
             </ul>
+
+            <h3>Attacks:</h3>
+            <ul>
+              {#each equippedManualUsage.attacks as attack}
+                <li>{attack.name}</li>
+              {/each}
+            </ul>
+
+            <button popovertarget="character-more-info-battle">More Info</button>
           </div>
         </div>
 
@@ -2263,15 +2320,34 @@
         </div>
 
         <!-- Popover More Info -->
-        <div popover id={"battle-enemy-more-info-" + window.id} style="background-color: lightyellow;">
+        <div popover id={"battle-enemy-more-info-" + window.id} style="background-color: lightyellow; right: 0; ">
           <h3>Attributes:</h3>
           <ul>
             {#each Object.entries(window.enemy.stats) as [stat, value]}
-              <li>{stat}: {value}</li>
+              <li>{capitalize(stat)}: {value}</li>
             {/each}
           </ul>
           <h3>Attacks:</h3>
           {#each window.enemy.attack as attack}
+            <div>
+              <h4>{attack.name}</h4>
+              <ul>
+                <li>Damage: {Math.round(attack.dmg * 100)}%</li>
+                <li>Stamina Cost: {Math.round(attack.staminaCost)}</li>
+                <li>Qi Cost: {Math.round(attack.qiCost * 100)}%</li>
+              </ul>
+            </div>
+          {/each}
+        </div>
+        <div popover id="character-more-info-battle" style="background-color: lightyellow;">
+          <h3>Attributes:</h3>
+          <ul>
+            {#each Object.entries(window.enemy.stats) as [stat, value]}
+              <li>{capitalize(stat)}: {value}</li>
+            {/each}
+          </ul>
+          <h3>Attacks:</h3>
+          {#each equippedManualUsage.attacks as attack}
             <div>
               <h4>{attack.name}</h4>
               <ul>
@@ -2299,42 +2375,142 @@
 <!-- button ui panels -->
 
 <style>
+  /* Serene Dawn: #FFE4B5, #FFF8E7, #CCAF89 */
   main {
-    margin: 2rem;
-    padding: 2rem;
-    background-color: #999;
+    margin: 0.75rem;
+    background-color: #333;
     color: black;
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
+    /* min-height: 568px;
+    max-height: 896px; */
+    justify-content: center;
+    gap: 2rem;
+  }
+
+  * {
+    margin: 0px;
+    padding: 0px;
   }
 
   .life-events {
-    width: 384px;
-    height: 768px;
     border-radius: 0.75rem;
     background-color: whitesmoke;
     padding: 1rem;
-    margin-right: 1rem;
+    margin: 1rem;
     overflow-y: scroll;
+  }
+  .life-events > h2 {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    justify-content: top;
+    margin-bottom: 1rem;
+    padding-bottom: .5rem;
+    border-bottom: #999 solid 0.25rem;
+  }
+
+  .life-events > ul {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    height: 100%;
+    justify-content: top;
+  }
+
+  .life-events > ul > li {
+    margin-bottom: 1rem;
+    background-color: #3A9D52;
+  }
+
+  .character-name {
+    display: flex;
+    flex-direction: column;
+  }
+  .character-name > div {
+    display: flex;
+    align-items: center;
+    margin: 0px;
+    padding: 0px;
   }
 
   .character-info-container {
-    height: 768px;
+    width: 100%;
     border-radius: 0.75rem;
     background-color: whitesmoke;
     padding: 1rem;
-    margin-right: 1rem;
+    margin: 1rem;
   }
   .main-action-container {
-    height: 768px;
     border-radius: 0.75rem;
     background-color: whitesmoke;
     padding: 1rem;
-    margin-right: 1rem;
+    margin: 1rem;
+    width: 100%;
+  }
+
+  .selected-actions {
+    display: flex;
+    flex-direction: column;
+    justify-self: left;
+    width: 100%;
+  }
+
+  .selected-actions-container > ul {
+    list-style: inside decimal;
+  }
+
+  .selected-actions-container > ul > li  {
+    background-color: #999;
+    height: 2rem;
+    font-size: x-large;
+    font-weight:bolder;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .selected-actions > button {
+    height: 3rem;
+  }
+
+  .actions-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem;
+    
+  }
+
+  .actions > p {
+    color: #999;
   }
 
   .actions-container > button {
-    margin-right: 1rem;
+    flex-grow: 1;
+    width: 100%;
+    height: 4rem;
+  }
+
+  .controls  {
+    width: 100%;
+    margin: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem
+  }
+  
+  .controls > button {
+    height: 4rem;
+  }
+  .restart {
+    width: 100%;
+    margin: 1rem;
+  }
+  .restart > button {
+    height: 6rem;
+    width: 100%;
   }
 
   /* event panels
@@ -2356,50 +2532,143 @@
   }
 
   /* button ui panels */
-  .herb-window {
+.herb-window {
   position: fixed;
-  top: 20%;
-  left: 20%;
-  width: 60%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
   background: white;
   padding: 2rem;
+  padding-top: 0.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
+  z-index: 500;
 }
 
-.stats {
+.herb-window > button {
+  height: 3rem;
+}
+
+.herb-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: left;
+  align-items: stretch;
+  margin-bottom: 0.5rem;
+}
+
+.herb-req {
   display: flex;
   flex-direction: row;
 }
 
-.controls {
+.herb-req > ul {
+  list-style: none;
+  display: flex;
+   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.treasure-window {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  align-items: stretch;
+  width: 100%;
+  background: white;
+  padding: 2rem;
+  padding-top: 0.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 750;
 }
 
-.controls > button {
-  height: 4rem;
+
+
+.stats {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0.75rem;
 }
+
+.stats > div{
+  display: flex;
+  flex-direction: column;
+  border: #222 solid 1px;
+  padding: 0.5rem;
+}
+
+.stats > div > ul {
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  height: 100%;
+  justify-content: space-evenly;
+}
+
 
 .battle-window {
-  background: #222;
-  color: white;
-  padding: 1rem;
-  border: 2px solid gold;
   position: fixed;
-  top: 20%;
-  left: 20%;
-  width: 60%;
-  z-index: 999;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  background: white;
+  padding-top: 0.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 750;
 }
 
 .battle-enemy-info-container {
   display: flex;
   flex-direction: column;
-  justify-content: right;
+  background-color: #999;
+  padding: 1rem;
 }
+
+.battle-enemy-info-container > h3{
+  margin-bottom: 0.25;
+  border-bottom: black solid 0.25rem;
+}
+
+.battle-enemy-info-container > div {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  border-bottom: black solid 0.25rem;
+}
+
+.battle-enemy-info-container > ul {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  list-style: none;
+}
+
+.battle-enemy-info-container > ul > li{
+  border-bottom: black 2px solid;
+}
+
+.battle-enemy-info-container > div > p {
+  margin-right: 0.5rem;
+}
+
 
 .grid{
   display: grid;
