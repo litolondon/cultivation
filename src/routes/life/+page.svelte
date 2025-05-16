@@ -2397,6 +2397,8 @@
   .life-events {
     border-radius: 0.75rem;
     background-color: whitesmoke;
+    max-height: 320px;
+    width: 100%;
     padding: 1rem;
     margin: 1rem;
     overflow-y: scroll;
