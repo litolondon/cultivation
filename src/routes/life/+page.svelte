@@ -1693,7 +1693,7 @@
 
     $: currHealth = character
     ? {
-      c: baseStatsOf.health - character.lostHealth
+      c: Math.round(baseStatsOf.health - character.lostHealth)
     }
     : {
       c: baseStatsOf.health
@@ -1867,43 +1867,97 @@
           <div>
             <h3 style="text-decoration: underline; margin-bottom: 0.25rem;">Stats</h3>
             <ul style="list-style: none;">
-              <li>
-                <strong>Health:</strong>
-                <span>{currHealth.c}/{baseStatsOf.health}</span>
+              <li style="display: block;">
+                <div>
+                  <label for="health" style="display: flex; flex-direction: row; align-items: center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px; margin-right: 0.25rem;">
+                        <g class="" transform="translate(0,0)" style="">
+                            <path d="M480.25 156.355c0 161.24-224.25 324.43-224.25 324.43S31.75 317.595 31.75 156.355c0-91.41 70.63-125.13 107.77-125.13 77.65 0 116.48 65.72 116.48 65.72s38.83-65.73 116.48-65.73c37.14.01 107.77 33.72 107.77 125.14z" fill="red" fill-opacity="1"></path>
+                        </g>
+                    </svg>
+                    <p><strong>Health:</strong> {currHealth.c}/{baseStatsOf.health}</p>
+                  </label>
+                </div>
+                <progress id="health" value={currHealth.c} max={baseStatsOf.health}> {Math.round((currHealth.c / baseStatsOf.health) * 100)}% </progress> 
+              </li>
+              <li style="display: block;">
+                <label for="qi-progress" style="display: flex; flex-direction: row; align-items: center;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px; margin-right: 0.25rem;">
+                      <g class="" transform="translate(0,0)" style="">
+                          <path d="M256 23C127.424 23 23 127.424 23 256s104.424 233 233 233 233-104.424 233-233S384.576 23 256 23zm-6.094 18.09C128.036 47.807 130.066 256 256 256c125.215 0 127.935 205.872 8.168 214.83-2.71.1-5.432.17-8.168.17-118.848 0-215-96.152-215-215 0-116.81 92.883-211.69 208.906-214.91zM256 103c22.537 0 41 18.463 41 41s-18.463 41-41 41-41-18.463-41-41 18.463-41 41-41zm0 224c-22.537 0-41 18.463-41 41s18.463 41 41 41 41-18.463 41-41-18.463-41-41-41z" fill="blue" fill-opacity="1"></path>
+                      </g>
+                  </svg>
+                  <p><strong>Qi:</strong> {Math.round(character.qiPoints)}/{Math.round(character.qiCapacity)}</p>
+                </label>
+                <progress id="qi-progress" value={character.qiPoints} max={character.qiCapacity}> {Math.round((character.qiPoints / character.qiCapacity) * 100)}% </progress> 
+              </li>
+              <li style="display: block;">
+                <label for="stamina" style="display: flex; flex-direction: row; align-items: center;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px; margin-right: 0.25rem;">
+                      <g class="" transform="translate(0,0)" style="">
+                          <path d="M255.875 29.406A9 9 0 0 0 247 38.53v118.314l-15.188 18.97C232.602 181.416 233 186.87 233 192v11.156l23-28.75 23 28.75V192c0-5.13.398-10.583 1.188-16.188L265 156.845V38.53a9 9 0 0 0-9.125-9.124zM176 121c-4.204 0-14.86 3.97-26.688 12.063-11.828 8.094-25.28 19.814-38.125 33.468-25.688 27.31-48.756 62.726-54.343 91.19-7.464 38.02-11.432 81.626-11.532 119.342-.1 37.717 4.43 70.268 10.75 82.907.458.913 2.002 2.488 6.47 3.717 4.466 1.23 11.21 1.775 19.187 1.313 15.95-.925 36.805-5.69 57.06-13.406 20.257-7.717 40-18.395 54.126-30.438C207.033 409.113 215 396.25 215 384V192c0-13.92-4.043-33.063-11.375-47.625C196.293 129.813 186.832 121 176 121zm160 0c-10.832 0-20.293 8.813-27.625 23.375C301.043 158.937 297 178.08 297 192v192c0 12.25 7.967 25.113 22.094 37.156 14.127 12.043 33.87 22.72 54.125 30.438 20.255 7.716 41.11 12.48 57.06 13.406 7.977.462 14.722-.084 19.19-1.313 4.466-1.228 6.01-2.804 6.467-3.718 6.32-12.64 10.85-45.19 10.75-82.908-.1-37.716-4.067-81.32-11.53-119.343-5.588-28.464-28.656-63.88-54.344-91.19-12.845-13.653-26.297-25.374-38.125-33.468C350.858 124.97 340.204 121 336 121z" fill="rgb(128, 158, 68)" fill-opacity="1"></path>
+                      </g>
+                  </svg>
+                  <p><strong>Stamina:</strong> <span>{currStam.c}/{baseStatsOf.stamina}</span></p>
+                </label>
+                <progress id="stamina" value={currStam.c} max={baseStatsOf.stamina}> {Math.round((currStam.c / baseStatsOf.stamina) * 100)}% </progress> 
               </li>
               <li>
-                <strong>Qi:</strong>
-                <span>{Math.round(character.qiPoints)}/{Math.round(character.qiCapacity)}</span>
-              </li>
-              <li>
-                <strong>Stamina:</strong>
-                <span>{currStam.c}/{baseStatsOf.stamina}</span>
-              </li>
-              <li>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px;">
+                    <g class="" transform="translate(0,0)" style="">
+                    <path d="m329.8 235.69 62.83-82.71 42.86 32.56-62.83 82.75zm-12.86-9.53 66.81-88-45-34.15-66.81 88zm-27.48-97.78-19.3 39.57 57-75-42.51-32.3-36.24 47.71zm-20.74-73.24-46.64-35.43-42 55.31 53.67 26.17zm107 235.52-139-102.71-9.92.91 4.56 2 62.16 138.43-16.52 2.25-57.68-128.5-40-17.7-4-30.84 39.41 19.42 36.36-3.33 17-34.83-110.9-54.09-80.68 112.51L177.6 346.67l-22.7 145.62H341V372.62l35.29-48.93L387 275.77z" fill="orange" fill-opacity="1"></path>
+                    </g>
+                </svg>
                 <strong>Pyhsical Attack:</strong>
                 <span>{baseStatsOf.pAttack}</span>
               </li>
               <li>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px;">
+                    <g class="" transform="translate(0,0)" style="">
+                        <path d="M247.938 22.512c-5.385.044-10.847.333-16.383.88 49.65 15.005 92.127 46.742 123.267 86.678-74.16-71.848-204.8-83.864-278.77 6.287 31.555-16.907 66.822-25.68 102.405-27.865C84.727 118.84 4.497 225.975 21.87 343.362c5.088-48.045 28.862-89.52 61.384-123.923-38.258 74.284-32.22 171.41 40.635 231.185-25.41-47.422-33.08-102.405-25.536-154.338-1.3 105.1 83.482 210.304 201.582 198.656-49.652-15.006-92.126-46.743-123.266-86.68 77.723 65.68 198.16 66.868 278.77-6.288-118.67 44.753-214.692 21.26-272.243-27.8-59.206-40.744-78.126-121.06-41.584-184.353a139.021 139.021 0 0 1 23.967-30.66c2.78-3.18 5.636-6.203 8.598-9.074 2.31-1.3 4.622-2.572 6.935-3.824 24.733-17.675 54.666-26.8 84.914-26.028 22.46.573 45.09 6.594 65.88 18.598 44.02 25.415 68.904 71.378 69.593 118.842a61.63 61.63 0 0 1 .957 10.734c0 33.88-27.466 61.344-61.346 61.344-33.877 0-61.342-27.465-61.342-61.344 0-1.698.083-3.376.218-5.04 5.484 18.857 22.88 32.644 43.504 32.644 25.027 0 45.315-20.29 45.315-45.315 0-24.785-19.903-44.912-44.596-45.298a93.138 93.138 0 0 0-15.167-1.246c-51.192 0-92.69 41.5-92.69 92.69s41.5 92.687 92.69 92.687a96.7 96.7 0 0 0 3.1-.056c-.168.064-.333.132-.5.195a165.74 165.74 0 0 0 12.336-1.03c52.59-.886 123.364-25.954 154.09-71.7-18.303 8.484-35.666 14.587-52.488 16.763a181.554 181.554 0 0 0 17.482-24.133c36.147-44.718 64.673-112.748 53.784-168.2-7.195 19.63-15.35 37.046-25.623 51.583-3.217-46.517-23.284-92.15-63.62-125.244 25.406 47.422 33.076 102.404 25.532 154.337 1.24-100.173-75.723-200.44-185.2-199.535z" fill="blue" fill-opacity="1"></path>
+                    </g>
+                </svg>
                 <strong>Spiritual Attack:</strong>
                 <span>{baseStatsOf.sAttack}</span>
               </li>
               <li>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 28px;">
+                    <g class="" transform="translate(0,0)" style="">
+                        <path d="M256 16c25 24 100 72 150 72v96c0 96-75 240-150 312-75-72-150-216-150-312V88c50 0 125-48 150-72z" fill="orange" fill-opacity="1"></path>
+                    </g>
+                </svg>
                 <strong>Pyhsical Defense:</strong>
                 <span>{baseStatsOf.pDef}</span>
               </li>
               <li>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 28px;">
+                    <g class="" transform="translate(0,0)" style="">
+                        <path d="M256 16c25 24 100 72 150 72v96c0 96-75 240-150 312-75-72-150-216-150-312V88c50 0 125-48 150-72z" fill="blue" fill-opacity="1"></path>
+                    </g>
+                </svg>
                 <strong>Spiritual Defense:</strong>
                 <span>{baseStatsOf.sDef}</span>
               </li>
               <li>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 28px;">
+                    <g class="" transform="translate(0,0)" style="">
+                    <path d="M140.488 19.31s-26.726 65.584-24.572 75.734c1.878 9.191 9.306.316 12.457 7.064 5.59 11.803 55.342 93.663 49.182 98.626-1.558 1.36-39.38-.402-67.961-5.845-52.49-9.998-94.822 2.352-77.039 42.21 26.177 58.653 133.15 154.14 97.89 183.602-40.844 34.159 19.82 117.249 79.275 40.308 10.885-14.085 29.356-73.201-1.614-69.579-37.447 4.38-14.128-30.491-14.128-30.491l23.345-29.92c12.96-1.9 134.534-21.449 134.534-21.449l-4.226-27.002-174.475 20.25s-24.16-32.453-35.964-50.687c-9.37-11.474 62.005 4.88 76.388-10.522 19.968-21.276 7.601-43.88 7.601-43.88L155.35 69.201zm114.619 43.977-62.759 39.419 16.081 28.897 114.931-58.86zm-124.743 78.84-46.691 31.612 48.224 10.444 17.417-12.13zm175.08 24.496-52.166 34.37 51.969 32.462.058-21.93c51.869 12.43 140.22 48.13 126.472 191.26l23.908-73.889 27.884 33.386c-5.502-166.903-150.537-170.593-178.19-171.609zm-74.376 175.953-19.91 25.873 110.89 14.697s18.638-17.84 15.035-18.976c-27.712-8.623-79.886-16.97-106.015-21.594z" fill="lightblue" fill-opacity="1"></path>
+                    </g>
+                </svg>
                 <strong>Dodge:</strong>
                 <span>{baseStatsOf.dodge}%</span>
               </li>
               <li>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px;">
+                  <g class="" transform="translate(0,0)" style="">
+                  <path d="M488 348.78h-70.24l-15.1 87.44-48.78-87.44H169v-50h190v-157h129zm-145-273v207H158.13l-48.79 87.47-15.11-87.47H24v-207zM136.724 215.324c0-10.139-12.257-15.214-19.425-8.046-7.168 7.168-2.093 19.426 8.046 19.426 6.285 0 11.38-5.095 11.38-11.38zm60.945 0c-.068-10.12-12.32-15.122-19.452-7.943-7.131 7.18-2.047 19.399 8.073 19.399 6.314 0 11.422-5.141 11.38-11.456zm60.945 0c0-10.139-12.257-15.214-19.425-8.046-7.169 7.168-2.093 19.426 8.046 19.426 6.284 0 11.38-5.095 11.38-11.38z" fill="purple" fill-opacity="1"></path>
+                  </g>
+              </svg>
                 <strong>Persuasion:</strong>
                 <span>{baseStatsOf.persuasion}%</span>
               </li>
               <li>
+                <img src="/statIcons/coin-chinese-svgrepo-com.svg" alt="luck">
                 <strong>Chance:</strong>
                 <span>{luck}%</span>
               </li>
@@ -2247,26 +2301,110 @@
               <!-- Enemy Info -->
               <div class="battle-enemy-info-container" style="grid-area: e;">
                 <h3>{window.enemy.name}</h3>
-                <div>
+                <div style="font-weight: 600;">
                   <p><strong>Realm:</strong>  {window.enemy.stage}</p>
-                  <p><strong>Qi:</strong> {window.enemy.qiPoints} / {window.enemy.qiCapacity}</p>
-                  <p><strong>Age:</strong>{window.enemy.age}</p>
+                  <p><strong>Age:</strong> {window.enemy.age}</p>
                 </div>
                 
 
-                <h3>Stats</h3>
-                <ul>
-                  <li><strong>Health:</strong> {window.enemy.curHealth}/{window.stats.health}</li>
-                  <li><strong>Qi:</strong> {Math.round(window.enemy.qiPoints)}/{Math.round(window.enemy.qiCapacity)}</li>
-                  <li><strong>Stamina:</strong> {window.enemy.curStam}/{window.stats.stamina}</li>
-                  <li><strong>Physical Attack:</strong> {window.stats.pAttack}</li>
-                  <li><strong>Spiritual Attack:</strong> {window.stats.sAttack}</li>
-                  <li><strong>Physical Defense:</strong> {window.stats.pDef}</li>
-                  <li><strong>Spiritual Defense:</strong> {window.stats.sDef}</li>
-                  <li><strong>Dodge:</strong> {window.stats.dodge}%</li>
-                  <li><strong>Persuasion:</strong> {window.stats.persuasion}%</li>
-                  <li><strong>Chance:</strong> {window.stats.chance}%</li>
+                
+                <ul style="list-style: none;">
+                  <li style="display: block;">
+                    <div>
+                      <label for="health" style="display: flex; flex-direction: row; align-items: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px; margin-right: 0.25rem;">
+                            <g class="" transform="translate(0,0)" style="">
+                                <path d="M480.25 156.355c0 161.24-224.25 324.43-224.25 324.43S31.75 317.595 31.75 156.355c0-91.41 70.63-125.13 107.77-125.13 77.65 0 116.48 65.72 116.48 65.72s38.83-65.73 116.48-65.73c37.14.01 107.77 33.72 107.77 125.14z" fill="red" fill-opacity="1"></path>
+                            </g>
+                        </svg>
+                        <p><strong>Health:</strong> {Math.round(window.enemy.curHealth)}/{Math.round(window.stats.health)}</p>
+                      </label>
+                    </div>
+                    <progress id="health" value={window.enemy.curHealth} max={window.stats.health}> {Math.round((window.enemy.curHealth / window.stats.health) * 100)}% </progress> 
+                  </li>
+                  <li style="display: block;">
+                    <label for="qi-progress" style="display: flex; flex-direction: row; align-items: center;">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px; margin-right: 0.25rem;">
+                          <g class="" transform="translate(0,0)" style="">
+                              <path d="M256 23C127.424 23 23 127.424 23 256s104.424 233 233 233 233-104.424 233-233S384.576 23 256 23zm-6.094 18.09C128.036 47.807 130.066 256 256 256c125.215 0 127.935 205.872 8.168 214.83-2.71.1-5.432.17-8.168.17-118.848 0-215-96.152-215-215 0-116.81 92.883-211.69 208.906-214.91zM256 103c22.537 0 41 18.463 41 41s-18.463 41-41 41-41-18.463-41-41 18.463-41 41-41zm0 224c-22.537 0-41 18.463-41 41s18.463 41 41 41 41-18.463 41-41-18.463-41-41-41z" fill="blue" fill-opacity="1"></path>
+                          </g>
+                      </svg>
+                      <p><strong>Qi:</strong> {Math.round(window.enemy.qiPoints)}/{Math.round(window.enemy.qiCapacity)}</p>
+                    </label>
+                    <progress id="qi-progress" value={Math.round(window.enemy.qiPoints)} max={Math.round(window.enemy.qiCapacity)}> {Math.round((window.enemy.qiPoints / window.enemy.qiCapacity) * 100)}% </progress> 
+                  </li>
+                  <li style="display: block;">
+                    <label for="stamina" style="display: flex; flex-direction: row; align-items: center;">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px; margin-right: 0.25rem;">
+                          <g class="" transform="translate(0,0)" style="">
+                              <path d="M255.875 29.406A9 9 0 0 0 247 38.53v118.314l-15.188 18.97C232.602 181.416 233 186.87 233 192v11.156l23-28.75 23 28.75V192c0-5.13.398-10.583 1.188-16.188L265 156.845V38.53a9 9 0 0 0-9.125-9.124zM176 121c-4.204 0-14.86 3.97-26.688 12.063-11.828 8.094-25.28 19.814-38.125 33.468-25.688 27.31-48.756 62.726-54.343 91.19-7.464 38.02-11.432 81.626-11.532 119.342-.1 37.717 4.43 70.268 10.75 82.907.458.913 2.002 2.488 6.47 3.717 4.466 1.23 11.21 1.775 19.187 1.313 15.95-.925 36.805-5.69 57.06-13.406 20.257-7.717 40-18.395 54.126-30.438C207.033 409.113 215 396.25 215 384V192c0-13.92-4.043-33.063-11.375-47.625C196.293 129.813 186.832 121 176 121zm160 0c-10.832 0-20.293 8.813-27.625 23.375C301.043 158.937 297 178.08 297 192v192c0 12.25 7.967 25.113 22.094 37.156 14.127 12.043 33.87 22.72 54.125 30.438 20.255 7.716 41.11 12.48 57.06 13.406 7.977.462 14.722-.084 19.19-1.313 4.466-1.228 6.01-2.804 6.467-3.718 6.32-12.64 10.85-45.19 10.75-82.908-.1-37.716-4.067-81.32-11.53-119.343-5.588-28.464-28.656-63.88-54.344-91.19-12.845-13.653-26.297-25.374-38.125-33.468C350.858 124.97 340.204 121 336 121z" fill="rgb(128, 158, 68)" fill-opacity="1"></path>
+                          </g>
+                      </svg>
+                      <p><strong>Stamina:</strong> <span>{window.enemy.curStam}/{window.stats.stamina}</span></p>
+                    </label>
+                    <progress id="stamina" value={window.enemy.curStam} max={window.stats.stamina}> {Math.round((window.enemy.curStam / window.stats.stamina) * 100)}% </progress> 
+                  </li>
+                  <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px;">
+                        <g class="" transform="translate(0,0)" style="">
+                        <path d="m329.8 235.69 62.83-82.71 42.86 32.56-62.83 82.75zm-12.86-9.53 66.81-88-45-34.15-66.81 88zm-27.48-97.78-19.3 39.57 57-75-42.51-32.3-36.24 47.71zm-20.74-73.24-46.64-35.43-42 55.31 53.67 26.17zm107 235.52-139-102.71-9.92.91 4.56 2 62.16 138.43-16.52 2.25-57.68-128.5-40-17.7-4-30.84 39.41 19.42 36.36-3.33 17-34.83-110.9-54.09-80.68 112.51L177.6 346.67l-22.7 145.62H341V372.62l35.29-48.93L387 275.77z" fill="orange" fill-opacity="1"></path>
+                        </g>
+                    </svg>
+                    <strong>Pyhsical Attack:</strong>
+                    <span>{window.stats.pAttack}</span>
+                  </li>
+                  <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px;">
+                        <g class="" transform="translate(0,0)" style="">
+                            <path d="M247.938 22.512c-5.385.044-10.847.333-16.383.88 49.65 15.005 92.127 46.742 123.267 86.678-74.16-71.848-204.8-83.864-278.77 6.287 31.555-16.907 66.822-25.68 102.405-27.865C84.727 118.84 4.497 225.975 21.87 343.362c5.088-48.045 28.862-89.52 61.384-123.923-38.258 74.284-32.22 171.41 40.635 231.185-25.41-47.422-33.08-102.405-25.536-154.338-1.3 105.1 83.482 210.304 201.582 198.656-49.652-15.006-92.126-46.743-123.266-86.68 77.723 65.68 198.16 66.868 278.77-6.288-118.67 44.753-214.692 21.26-272.243-27.8-59.206-40.744-78.126-121.06-41.584-184.353a139.021 139.021 0 0 1 23.967-30.66c2.78-3.18 5.636-6.203 8.598-9.074 2.31-1.3 4.622-2.572 6.935-3.824 24.733-17.675 54.666-26.8 84.914-26.028 22.46.573 45.09 6.594 65.88 18.598 44.02 25.415 68.904 71.378 69.593 118.842a61.63 61.63 0 0 1 .957 10.734c0 33.88-27.466 61.344-61.346 61.344-33.877 0-61.342-27.465-61.342-61.344 0-1.698.083-3.376.218-5.04 5.484 18.857 22.88 32.644 43.504 32.644 25.027 0 45.315-20.29 45.315-45.315 0-24.785-19.903-44.912-44.596-45.298a93.138 93.138 0 0 0-15.167-1.246c-51.192 0-92.69 41.5-92.69 92.69s41.5 92.687 92.69 92.687a96.7 96.7 0 0 0 3.1-.056c-.168.064-.333.132-.5.195a165.74 165.74 0 0 0 12.336-1.03c52.59-.886 123.364-25.954 154.09-71.7-18.303 8.484-35.666 14.587-52.488 16.763a181.554 181.554 0 0 0 17.482-24.133c36.147-44.718 64.673-112.748 53.784-168.2-7.195 19.63-15.35 37.046-25.623 51.583-3.217-46.517-23.284-92.15-63.62-125.244 25.406 47.422 33.076 102.404 25.532 154.337 1.24-100.173-75.723-200.44-185.2-199.535z" fill="blue" fill-opacity="1"></path>
+                        </g>
+                    </svg>
+                    <strong>Spiritual Attack:</strong>
+                    <span>{window.stats.sAttack}</span>
+                  </li>
+                  <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 28px;">
+                        <g class="" transform="translate(0,0)" style="">
+                            <path d="M256 16c25 24 100 72 150 72v96c0 96-75 240-150 312-75-72-150-216-150-312V88c50 0 125-48 150-72z" fill="orange" fill-opacity="1"></path>
+                        </g>
+                    </svg>
+                    <strong>Pyhsical Defense:</strong>
+                    <span>{window.stats.pDef}</span>
+                  </li>
+                  <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 28px;">
+                        <g class="" transform="translate(0,0)" style="">
+                            <path d="M256 16c25 24 100 72 150 72v96c0 96-75 240-150 312-75-72-150-216-150-312V88c50 0 125-48 150-72z" fill="blue" fill-opacity="1"></path>
+                        </g>
+                    </svg>
+                    <strong>Spiritual Defense:</strong>
+                    <span>{window.stats.sDef}</span>
+                  </li>
+                  <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 28px;">
+                        <g class="" transform="translate(0,0)" style="">
+                        <path d="M140.488 19.31s-26.726 65.584-24.572 75.734c1.878 9.191 9.306.316 12.457 7.064 5.59 11.803 55.342 93.663 49.182 98.626-1.558 1.36-39.38-.402-67.961-5.845-52.49-9.998-94.822 2.352-77.039 42.21 26.177 58.653 133.15 154.14 97.89 183.602-40.844 34.159 19.82 117.249 79.275 40.308 10.885-14.085 29.356-73.201-1.614-69.579-37.447 4.38-14.128-30.491-14.128-30.491l23.345-29.92c12.96-1.9 134.534-21.449 134.534-21.449l-4.226-27.002-174.475 20.25s-24.16-32.453-35.964-50.687c-9.37-11.474 62.005 4.88 76.388-10.522 19.968-21.276 7.601-43.88 7.601-43.88L155.35 69.201zm114.619 43.977-62.759 39.419 16.081 28.897 114.931-58.86zm-124.743 78.84-46.691 31.612 48.224 10.444 17.417-12.13zm175.08 24.496-52.166 34.37 51.969 32.462.058-21.93c51.869 12.43 140.22 48.13 126.472 191.26l23.908-73.889 27.884 33.386c-5.502-166.903-150.537-170.593-178.19-171.609zm-74.376 175.953-19.91 25.873 110.89 14.697s18.638-17.84 15.035-18.976c-27.712-8.623-79.886-16.97-106.015-21.594z" fill="lightblue" fill-opacity="1"></path>
+                        </g>
+                    </svg>
+                    <strong>Dodge:</strong>
+                    <span>{window.stats.dodge}%</span>
+                  </li>
+                  <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px;">
+                      <g class="" transform="translate(0,0)" style="">
+                      <path d="M488 348.78h-70.24l-15.1 87.44-48.78-87.44H169v-50h190v-157h129zm-145-273v207H158.13l-48.79 87.47-15.11-87.47H24v-207zM136.724 215.324c0-10.139-12.257-15.214-19.425-8.046-7.168 7.168-2.093 19.426 8.046 19.426 6.285 0 11.38-5.095 11.38-11.38zm60.945 0c-.068-10.12-12.32-15.122-19.452-7.943-7.131 7.18-2.047 19.399 8.073 19.399 6.314 0 11.422-5.141 11.38-11.456zm60.945 0c0-10.139-12.257-15.214-19.425-8.046-7.169 7.168-2.093 19.426 8.046 19.426 6.284 0 11.38-5.095 11.38-11.38z" fill="purple" fill-opacity="1"></path>
+                      </g>
+                  </svg>
+                    <strong>Persuasion:</strong>
+                    <span>{window.stats.persuasion}%</span>
+                  </li>
+                  <li>
+                    <img src="/statIcons/coin-chinese-svgrepo-com.svg" alt="luck">
+                    <strong>Chance:</strong>
+                    <span>{window.stats.chance}%</span>
+                  </li>
                 </ul>
+                
 
                 <h3>Attacks:</h3>
                 <ul>
@@ -2281,31 +2419,124 @@
               <!-- Character Info -->
               <div class="battle-enemy-info-container" style="grid-area: c;">
                 <h3>{character.name}</h3>
-                <div>
+                <div style="font-weight: 600;">
                   <p>Realm: {shownRealmNumber}</p>
-                  <p>Qi: {Math.round(character.qiPoints)} / {Math.round(character.qiCapacity)}</p>
                   <p>Age: {character.age}</p>
                 </div>
-                
-
-                <h3>Stats</h3>
-                <ul>
-                  <li><strong>Health:</strong> {currHealth.c}/{baseStatsOf.health}</li>
-                  <li><strong>Qi:</strong> {Math.round(character.qiPoints)}/{Math.round(character.qiCapacity)}</li>
-                  <li><strong>Stamina:</strong> {currStam.c}/{baseStatsOf.stamina}</li>
-                  <li><strong>Physical Attack:</strong> {baseStatsOf.pAttack}</li>
-                  <li><strong>Spiritual Attack:</strong> {baseStatsOf.sAttack}</li>
-                  <li><strong>Physical Defense:</strong> {baseStatsOf.pDef}</li>
-                  <li><strong>Spiritual Defense:</strong> {baseStatsOf.sDef}</li>
-                  <li><strong>Dodge:</strong> {baseStatsOf.dodge}%</li>
-                  <li><strong>Persuasion:</strong> {baseStatsOf.persuasion}%</li>
-                  <li><strong>Chance:</strong> {luck}%</li>
+              
+          
+          
+                <ul style="list-style: none;">
+                  <li style="display: block;">
+                    <div>
+                      <label for="health" style="display: flex; flex-direction: row; align-items: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px;">
+                            <g class="" transform="translate(0,0)" style="">
+                                <path d="M480.25 156.355c0 161.24-224.25 324.43-224.25 324.43S31.75 317.595 31.75 156.355c0-91.41 70.63-125.13 107.77-125.13 77.65 0 116.48 65.72 116.48 65.72s38.83-65.73 116.48-65.73c37.14.01 107.77 33.72 107.77 125.14z" fill="red" fill-opacity="1"></path>
+                            </g>
+                        </svg>
+                        <p><strong>Health:</strong> {currHealth.c}/{baseStatsOf.health}</p>
+                      </label>
+                    </div>
+                    <progress id="health" value={currHealth.c} max={baseStatsOf.health}> {Math.round((currHealth.c / baseStatsOf.health) * 100)}% </progress> 
+                  </li>
+                  <li style="display: block;">
+                    <label for="qi-progress" style="display: flex; flex-direction: row; align-items: center;">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px; margin-right: 0.25rem;">
+                          <g class="" transform="translate(0,0)" style="">
+                              <path d="M256 23C127.424 23 23 127.424 23 256s104.424 233 233 233 233-104.424 233-233S384.576 23 256 23zm-6.094 18.09C128.036 47.807 130.066 256 256 256c125.215 0 127.935 205.872 8.168 214.83-2.71.1-5.432.17-8.168.17-118.848 0-215-96.152-215-215 0-116.81 92.883-211.69 208.906-214.91zM256 103c22.537 0 41 18.463 41 41s-18.463 41-41 41-41-18.463-41-41 18.463-41 41-41zm0 224c-22.537 0-41 18.463-41 41s18.463 41 41 41 41-18.463 41-41-18.463-41-41-41z" fill="blue" fill-opacity="1"></path>
+                          </g>
+                      </svg>
+                      <p><strong>Qi:</strong> {Math.round(character.qiPoints)}/{Math.round(character.qiCapacity)}</p>
+                    </label>
+                    <progress id="qi-progress" value={character.qiPoints} max={character.qiCapacity}> {Math.round((character.qiPoints / character.qiCapacity) * 100)}% </progress> 
+                  </li>
+                  <li style="display: block;">
+                    <label for="stamina" style="display: flex; flex-direction: row; align-items: center;">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px; margin-right: 0.25rem;">
+                          <g class="" transform="translate(0,0)" style="">
+                              <path d="M255.875 29.406A9 9 0 0 0 247 38.53v118.314l-15.188 18.97C232.602 181.416 233 186.87 233 192v11.156l23-28.75 23 28.75V192c0-5.13.398-10.583 1.188-16.188L265 156.845V38.53a9 9 0 0 0-9.125-9.124zM176 121c-4.204 0-14.86 3.97-26.688 12.063-11.828 8.094-25.28 19.814-38.125 33.468-25.688 27.31-48.756 62.726-54.343 91.19-7.464 38.02-11.432 81.626-11.532 119.342-.1 37.717 4.43 70.268 10.75 82.907.458.913 2.002 2.488 6.47 3.717 4.466 1.23 11.21 1.775 19.187 1.313 15.95-.925 36.805-5.69 57.06-13.406 20.257-7.717 40-18.395 54.126-30.438C207.033 409.113 215 396.25 215 384V192c0-13.92-4.043-33.063-11.375-47.625C196.293 129.813 186.832 121 176 121zm160 0c-10.832 0-20.293 8.813-27.625 23.375C301.043 158.937 297 178.08 297 192v192c0 12.25 7.967 25.113 22.094 37.156 14.127 12.043 33.87 22.72 54.125 30.438 20.255 7.716 41.11 12.48 57.06 13.406 7.977.462 14.722-.084 19.19-1.313 4.466-1.228 6.01-2.804 6.467-3.718 6.32-12.64 10.85-45.19 10.75-82.908-.1-37.716-4.067-81.32-11.53-119.343-5.588-28.464-28.656-63.88-54.344-91.19-12.845-13.653-26.297-25.374-38.125-33.468C350.858 124.97 340.204 121 336 121z" fill="rgb(128, 158, 68)" fill-opacity="1"></path>
+                          </g>
+                      </svg>
+                      <p><strong>Stamina:</strong> <span>{currStam.c}/{baseStatsOf.stamina}</span></p>
+                    </label>
+                    <progress id="stamina" value={currStam.c} max={baseStatsOf.stamina}> {Math.round((currStam.c / baseStatsOf.stamina) * 100)}% </progress> 
+                  </li>
+                  <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px; margin-right: 0.25rem;">
+                        <g class="" transform="translate(0,0)" style="">
+                        <path d="m329.8 235.69 62.83-82.71 42.86 32.56-62.83 82.75zm-12.86-9.53 66.81-88-45-34.15-66.81 88zm-27.48-97.78-19.3 39.57 57-75-42.51-32.3-36.24 47.71zm-20.74-73.24-46.64-35.43-42 55.31 53.67 26.17zm107 235.52-139-102.71-9.92.91 4.56 2 62.16 138.43-16.52 2.25-57.68-128.5-40-17.7-4-30.84 39.41 19.42 36.36-3.33 17-34.83-110.9-54.09-80.68 112.51L177.6 346.67l-22.7 145.62H341V372.62l35.29-48.93L387 275.77z" fill="orange" fill-opacity="1"></path>
+                        </g>
+                    </svg>
+                    <strong>Pyhsical Attack:</strong>
+                    <span>{baseStatsOf.pAttack}</span>
+                  </li>
+                  <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px;">
+                        <g class="" transform="translate(0,0)" style="">
+                            <path d="M247.938 22.512c-5.385.044-10.847.333-16.383.88 49.65 15.005 92.127 46.742 123.267 86.678-74.16-71.848-204.8-83.864-278.77 6.287 31.555-16.907 66.822-25.68 102.405-27.865C84.727 118.84 4.497 225.975 21.87 343.362c5.088-48.045 28.862-89.52 61.384-123.923-38.258 74.284-32.22 171.41 40.635 231.185-25.41-47.422-33.08-102.405-25.536-154.338-1.3 105.1 83.482 210.304 201.582 198.656-49.652-15.006-92.126-46.743-123.266-86.68 77.723 65.68 198.16 66.868 278.77-6.288-118.67 44.753-214.692 21.26-272.243-27.8-59.206-40.744-78.126-121.06-41.584-184.353a139.021 139.021 0 0 1 23.967-30.66c2.78-3.18 5.636-6.203 8.598-9.074 2.31-1.3 4.622-2.572 6.935-3.824 24.733-17.675 54.666-26.8 84.914-26.028 22.46.573 45.09 6.594 65.88 18.598 44.02 25.415 68.904 71.378 69.593 118.842a61.63 61.63 0 0 1 .957 10.734c0 33.88-27.466 61.344-61.346 61.344-33.877 0-61.342-27.465-61.342-61.344 0-1.698.083-3.376.218-5.04 5.484 18.857 22.88 32.644 43.504 32.644 25.027 0 45.315-20.29 45.315-45.315 0-24.785-19.903-44.912-44.596-45.298a93.138 93.138 0 0 0-15.167-1.246c-51.192 0-92.69 41.5-92.69 92.69s41.5 92.687 92.69 92.687a96.7 96.7 0 0 0 3.1-.056c-.168.064-.333.132-.5.195a165.74 165.74 0 0 0 12.336-1.03c52.59-.886 123.364-25.954 154.09-71.7-18.303 8.484-35.666 14.587-52.488 16.763a181.554 181.554 0 0 0 17.482-24.133c36.147-44.718 64.673-112.748 53.784-168.2-7.195 19.63-15.35 37.046-25.623 51.583-3.217-46.517-23.284-92.15-63.62-125.244 25.406 47.422 33.076 102.404 25.532 154.337 1.24-100.173-75.723-200.44-185.2-199.535z" fill="blue" fill-opacity="1"></path>
+                        </g>
+                    </svg>
+                    <strong>Spiritual Attack:</strong>
+                    <span>{baseStatsOf.sAttack}</span>
+                  </li>
+                  <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 28px;">
+                        <g class="" transform="translate(0,0)" style="">
+                            <path d="M256 16c25 24 100 72 150 72v96c0 96-75 240-150 312-75-72-150-216-150-312V88c50 0 125-48 150-72z" fill="orange" fill-opacity="1"></path>
+                        </g>
+                    </svg>
+                    <strong>Pyhsical Defense:</strong>
+                    <span>{baseStatsOf.pDef}</span>
+                  </li>
+                  <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 28px;">
+                        <g class="" transform="translate(0,0)" style="">
+                            <path d="M256 16c25 24 100 72 150 72v96c0 96-75 240-150 312-75-72-150-216-150-312V88c50 0 125-48 150-72z" fill="blue" fill-opacity="1"></path>
+                        </g>
+                    </svg>
+                    <strong>Spiritual Defense:</strong>
+                    <span>{baseStatsOf.sDef}</span>
+                  </li>
+                  <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 28px;">
+                        <g class="" transform="translate(0,0)" style="">
+                        <path d="M140.488 19.31s-26.726 65.584-24.572 75.734c1.878 9.191 9.306.316 12.457 7.064 5.59 11.803 55.342 93.663 49.182 98.626-1.558 1.36-39.38-.402-67.961-5.845-52.49-9.998-94.822 2.352-77.039 42.21 26.177 58.653 133.15 154.14 97.89 183.602-40.844 34.159 19.82 117.249 79.275 40.308 10.885-14.085 29.356-73.201-1.614-69.579-37.447 4.38-14.128-30.491-14.128-30.491l23.345-29.92c12.96-1.9 134.534-21.449 134.534-21.449l-4.226-27.002-174.475 20.25s-24.16-32.453-35.964-50.687c-9.37-11.474 62.005 4.88 76.388-10.522 19.968-21.276 7.601-43.88 7.601-43.88L155.35 69.201zm114.619 43.977-62.759 39.419 16.081 28.897 114.931-58.86zm-124.743 78.84-46.691 31.612 48.224 10.444 17.417-12.13zm175.08 24.496-52.166 34.37 51.969 32.462.058-21.93c51.869 12.43 140.22 48.13 126.472 191.26l23.908-73.889 27.884 33.386c-5.502-166.903-150.537-170.593-178.19-171.609zm-74.376 175.953-19.91 25.873 110.89 14.697s18.638-17.84 15.035-18.976c-27.712-8.623-79.886-16.97-106.015-21.594z" fill="lightblue" fill-opacity="1"></path>
+                        </g>
+                    </svg>
+                    <strong>Dodge:</strong>
+                    <span>{baseStatsOf.dodge}%</span>
+                  </li>
+                  <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px;">
+                      <g class="" transform="translate(0,0)" style="">
+                      <path d="M488 348.78h-70.24l-15.1 87.44-48.78-87.44H169v-50h190v-157h129zm-145-273v207H158.13l-48.79 87.47-15.11-87.47H24v-207zM136.724 215.324c0-10.139-12.257-15.214-19.425-8.046-7.168 7.168-2.093 19.426 8.046 19.426 6.285 0 11.38-5.095 11.38-11.38zm60.945 0c-.068-10.12-12.32-15.122-19.452-7.943-7.131 7.18-2.047 19.399 8.073 19.399 6.314 0 11.422-5.141 11.38-11.456zm60.945 0c0-10.139-12.257-15.214-19.425-8.046-7.169 7.168-2.093 19.426 8.046 19.426 6.284 0 11.38-5.095 11.38-11.38z" fill="purple" fill-opacity="1"></path>
+                      </g>
+                  </svg>
+                    <strong>Persuasion:</strong>
+                    <span>{baseStatsOf.persuasion}%</span>
+                  </li>
+                  <li>
+                    <img src="/statIcons/coin-chinese-svgrepo-com.svg" alt="luck">
+                    <strong>Chance:</strong>
+                    <span>{luck}%</span>
+                  </li>
                 </ul>
+              
 
                 <h3>Attacks:</h3>
                 <ul>
                   {#each equippedManualUsage.attacks as attack}
-                    <li>{attack.name}</li>
+                    <li>
+                      <button
+                        class="attack-btn"
+                        onclick={() => handleAttack(attack)}
+                        disabled={attack.staminaCost > currStam.c || attack.qiCost > character.qiPoints}
+                        style
+                      >
+                        {attack.name}
+                      </button>
+                    </li>
                   {/each}
                 </ul>
 
@@ -2341,18 +2572,36 @@
             </div>
             <div popover id="character-more-info-battle" style="background-color: #FFF8E7;">
               <h3>Attributes:</h3>
-              <ul>
-                {#each Object.entries(window.enemy.stats) as [stat, value]}
-                  <li>{capitalize(stat)}: {value}</li>
-                {/each}
-              </ul>
+              <ul style="list-style: none;">
+              {#each Object.entries(character.stats) as [key, baseValue]}
+                <li>
+                  <strong>
+                    {key.charAt(0).toUpperCase() + key.slice(1)}:
+                  </strong>
+                  <span>
+                    {baseValue}
+                    {#if character.addedStats?.[key] > 0}
+                      <span style="color: green;"> (+{character.addedStats[key]})</span>
+                    {/if}
+                    {#if character.addedStats?.[key] < 0}
+                      <span style="color: red;"> ({character.addedStats[key]})</span>
+                    {/if}
+                  </span>
+                  {#if character.unallocatedPoints >= 0}
+                    <button type="button" onclick={() => allocatePoint(key)}>
+                      +1
+                    </button>
+                  {/if}
+                </li>
+              {/each}
+            </ul>
               <h3>Attacks:</h3>
               {#each equippedManualUsage.attacks as attack}
                 <div>
                   <h4>{attack.name}</h4>
                   <ul>
                     <li>Damage: {Math.round(attack.dmg * 100)}%</li>
-                    <li>Stamina Cost: {Math.round(attack.staminaCost * 100)}%</li>
+                    <li>Stamina Cost: {attack.staminaCost}</li>
                     <li>Qi Cost: {Math.round(attack.qiCost * 100)}%</li>
                     <li>Chance: {Math.round(attack.chance * 100)}%</li>
                   </ul>
@@ -2635,6 +2884,7 @@
   align-items: stretch;
   justify-content: center;
   gap: 0.75rem;
+  font-size: large;
 }
 
 .stats > div{
@@ -2644,6 +2894,7 @@
   padding: 0.5rem;
   background-color: #FFF8E7;
   border-radius:0.5rem ;
+  width: 50%;
 }
 
 .stats > div > ul {
@@ -2652,14 +2903,14 @@
   align-items: left;
   height: 100%;
   justify-content: space-evenly;
-
 }
+
 
 .stats > div > ul > li > button{
   background-color: #CCAF89;
-  width: 5rem;
+  width: 100%;
   height: 1.5rem;
-
+  justify-content: center;
 }
 
 
@@ -2727,6 +2978,72 @@
   'c . e'
   'f f f'
   ;
+}
+
+progress#health {
+  width: 100%;
+  height: 0.5rem;
+  appearance: none; /* Remove default styling */
+  border-radius: 10px;
+}
+
+progress#health::-webkit-progress-bar {
+  background-color: #eee;
+  border-radius: 10px;
+}
+
+progress#health::-webkit-progress-value {
+  background-color: red; /* Red color for the progress bar */
+  border-radius: 10px;
+}
+
+progress#health::-moz-progress-bar {
+  background-color: red; /* Red color for Firefox */
+  border-radius: 10px;
+}
+
+progress#stamina {
+  width: 100%;
+  height: 0.5rem;
+  appearance: none; /* Remove default styling */
+  border-radius: 10px;
+}
+
+progress#stamina::-webkit-progress-bar {
+  background-color: #eee;
+  border-radius: 10px;
+}
+
+progress#stamina::-webkit-progress-value {
+  background-color: rgb(128, 158, 68); /* Red color for the progress bar */
+  border-radius: 10px;
+}
+
+progress#stamina::-moz-progress-bar {
+  background-color: rgb(128, 158, 68); /* Red color for Firefox */
+  border-radius: 10px;
+}
+
+progress#qi-progress {
+  width: 100%;
+  height: 0.5rem;
+  appearance: none; /* Remove default styling */
+  border-radius: 10px;
+}
+
+progress#qi-progress::-webkit-progress-bar {
+  background-color: #eee;
+  border-radius: 10px;
+}
+
+progress#qi-progress::-webkit-progress-value {
+  background-color: blue; /* Red color for the progress bar */
+  border-radius: 10px;
+}
+
+progress#qi-progress::-moz-progress-bar {
+  background-color: blue; /* Red color for Firefox */
+  border-radius: 10px;
 }
 </style>
 

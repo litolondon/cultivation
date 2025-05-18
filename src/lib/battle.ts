@@ -39,6 +39,7 @@ export type BattleEncounter = {
     pDef: number;
     sDef: number;
     persuasion: string;
+    chance: number;
   };
   prize: number;
   result?: 'Won' | 'Lost';
