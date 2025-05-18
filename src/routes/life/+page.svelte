@@ -1902,7 +1902,7 @@
         if (success) return log;
       } else {
         // deduct cost
-        currStam.c -= chosen.staminaCost;
+        character.usedStam += chosen.staminaCost;
         character.qiPoints      -= character.qiPoints * chosen.qiCost;
 
         // guaranteed hit
@@ -1955,8 +1955,8 @@
        window.enemy.qiPoints      -=  enemyAtk.qiCost *  window.enemy.qiCapacity;
 
       // guaranteed hit
-      const dmg2 = enemyAtk.dmg;
-      currHealth.c -= currHealth.c - dmg2;
+      const dmg2 = Math.round((enemyAtk.dmg * window.stats.pAttack) + ((character.qiPoints * chosen.qiCost) / 4));
+      character.lostHealth += dmg2;
 
       log.push({
         attacker:  window.enemy.name,
@@ -1982,8 +1982,18 @@
       const encounter = activeBattleWindows.find(w => w.id === encounterId);
       if (!encounter || !character) return;
 
+      
+      const r = document.getElementById(`battle-enemy-win + ${encounter.id}`);
+
       if (result === 'Won') {
         character.spiritstones += encounter.enemy.spiritstones;
+        const r = document.getElementById(`battle-enemy-win${encounter.id}`);
+        r.style.display = 'block';
+        r.style.zIndex = '2000';
+      } else {
+        const r = document.getElementById(`battle-enemy-win${encounter.id}`);
+        r.style.display = 'block';
+        r.style.zIndex = '2000';
       }
 
       character.lifeEvents.unshift({
@@ -1992,13 +2002,13 @@
         description: `You encountered ${encounter.enemy.name} in battle and ${result.toLowerCase()}.`,
         date: new Date().toISOString(),
       });
-
-      // Remove the battle window
-      activeBattleWindows = activeBattleWindows.filter(w => w.id !== encounterId);
-
       saveCharacter();
     }
 
+    function closeBattleResult(encounterId: number) {
+      // Remove the battle window
+      activeBattleWindows = activeBattleWindows.filter(w => w.id !== encounterId);
+    }
 </script>
 
 <main>
@@ -2775,28 +2785,28 @@
             <div popover id="character-more-info-battle" style="background-color: #FFF8E7;">
               <h3>Attributes:</h3>
               <ul style="list-style: none;">
-              {#each Object.entries(character.stats) as [key, baseValue]}
-                <li>
-                  <strong>
-                    {key.charAt(0).toUpperCase() + key.slice(1)}:
-                  </strong>
-                  <span>
-                    {baseValue}
-                    {#if character.addedStats?.[key] > 0}
-                      <span style="color: green;"> (+{character.addedStats[key]})</span>
+                {#each Object.entries(character.stats) as [key, baseValue]}
+                  <li>
+                    <strong>
+                      {key.charAt(0).toUpperCase() + key.slice(1)}:
+                    </strong>
+                    <span>
+                      {baseValue}
+                      {#if character.addedStats?.[key] > 0}
+                        <span style="color: green;"> (+{character.addedStats[key]})</span>
+                      {/if}
+                      {#if character.addedStats?.[key] < 0}
+                        <span style="color: red;"> ({character.addedStats[key]})</span>
+                      {/if}
+                    </span>
+                    {#if character.unallocatedPoints >= 0}
+                      <button type="button" onclick={() => allocatePoint(key)}>
+                        +1
+                      </button>
                     {/if}
-                    {#if character.addedStats?.[key] < 0}
-                      <span style="color: red;"> ({character.addedStats[key]})</span>
-                    {/if}
-                  </span>
-                  {#if character.unallocatedPoints >= 0}
-                    <button type="button" onclick={() => allocatePoint(key)}>
-                      +1
-                    </button>
-                  {/if}
-                </li>
-              {/each}
-            </ul>
+                  </li>
+                {/each}
+              </ul>
               <h3>Attacks:</h3>
               {#each equippedManualUsage.attacks as attack}
                 <div>
@@ -2809,6 +2819,10 @@
                   </ul>
                 </div>
               {/each}
+            </div>
+            <div popover id={"battle-enemy-win" + window.id} style="background-color:#FFF8E7 ; top: 50%; left: 50%; transform:translate(-50%, -50%); display:none; ">
+              <p>You beat {window.enemy.name} and gained {window.prize} spiritstones.</p>
+              <button onclick={closeBattleResult(window.id)}>Close</button>
             </div>
           </div>
         {/each}
