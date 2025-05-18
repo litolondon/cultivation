@@ -1966,7 +1966,10 @@
         defenderRemainingHealth: currHealth.c
       });
 
-      return log;
+      if (currHealth.c <= (currHealth.c / 100)) {
+          resolveBattle(window.id, 'Lost');
+          return log;
+        }
     }
 
     // Handler called by buttons
