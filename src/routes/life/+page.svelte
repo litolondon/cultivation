@@ -89,6 +89,25 @@
   let activeTreasureWindows: { id: number; treasure: Treasure | Manual; type: 'treasure' | 'manual' }[] = [];
   let activeBattleWindows: BattleEncounter[] = [];
   $: hasStarterManual = character?.manuals?.some(m => m.grade === 'Mortal') ?? false;
+  
+  
+  const gradeOrder: Record<Manual['grade'], number> = {
+    Celestial: 0,
+    Heaven:    1,
+    Earth:     2,
+    Mortal:    3
+  };
+
+  $: invManuals = character?.manuals
+    ? [...character.manuals].sort((a: Manual, b: Manual) => {
+        // 1) Equipped first
+        if (a.equipped && !b.equipped) return -1;
+        if (!a.equipped && b.equipped) return  1;
+        // 2) Then by grade priority
+        return gradeOrder[a.grade] - gradeOrder[b.grade];
+      })
+    : [];
+
   let onTurn: (turn: BattleTurnResult) => void = () => {};  // default no-op callback
   let startBackgroundMusic = false;
 
@@ -1309,15 +1328,22 @@
    
   // Advance one year and award points
   function advanceYear() {
-    console.log(equippedManualUsage)
-
+    character.lifespan += 50;
     
     if (!character) return;
     character.age++;
-
+    character.qiPoints += character.qiCapacity * 0.02;
     if (character.qiPoints > character.qiCapacity) {
       character.qiPoints =  character.qiCapacity;
     }
+    character.lostHealth -= (baseStatsOf.health / 5);
+    if (character.lostHealth < 0) {
+      character.lostHealth = 0;
+    } 
+    character.usedStam -= Math.round(baseStatsOf.stamina / 50);
+    if (character.usedStam < 0) {
+      character.usedStam = 0;
+    } 
 
     character.stats.lifespan--;
     // apply selected actions
@@ -1358,10 +1384,7 @@
       });
     });
 
-    character.lostHealth -= (baseStatsOf.health / 5);
-    if (character.lostHealth < 0) {
-      character.lostHealth = 0;
-    } 
+    
     saveCharacter();
     selectedActions = [];
   }
@@ -1735,16 +1758,18 @@
    $: shownRealmNumber = character
   ? character.stage.findIndex(flag => flag === true) - 1: 0;
 
+
+
   $: baseStatsOf = character
   ? {
       health: Math.round((getEffectiveStat('constitution') * 2) + 1) * ((realmNumber) + (getEffectiveStat('strength') * 2)),
       stamina: Math.round(((getEffectiveStat('constitution') + getEffectiveStat('dexterity')) / 2) * realmNumber),
-      dodge: ((((getEffectiveStat('dexterity') / 8) * realmNumber) / 2) / 1000).toFixed(2),
+      dodge: ((getEffectiveStat('dexterity') / 2)).toFixed(2),
       pAttack: Math.round(getEffectiveStat('strength') * 2 * realmNumber),
       sAttack: Math.round((getEffectiveStat('qiAffinity') + getEffectiveStat('intelligence') / 2) + (character.qiPoints * 0.005) * realmNumber),
       pDef: Math.round(((getEffectiveStat('strength') + getEffectiveStat('constitution')) * 1.5) * realmNumber),
       sDef: Math.round(((getEffectiveStat('qiAffinity') + (getEffectiveStat('intelligence') / 4) + (getEffectiveStat('constitution') / 4)) + (character.qiPoints * 0.005)) * (realmNumber / 2)),
-      persuasion: ((((getEffectiveStat('charisma') / 4) * realmNumber) / 2) / 1000).toFixed(2) 
+      persuasion: (((getEffectiveStat('charisma') / 6) * (realmNumber / 2))).toFixed(2) 
     }
   : {
       health: 0,
@@ -1764,7 +1789,7 @@
 
     $: currStam = character
     ? {
-      c: baseStatsOf.stamina - character.usedStam
+      c: Math.round(baseStatsOf.stamina - character.usedStam)
     }
     : {
       c: baseStatsOf.stamina
@@ -2286,7 +2311,7 @@
     {/if}    
       <div popover id="manuals" style="height: 769px; overflow-y: scroll;">
       {#if character.manuals}
-        {#each character.manuals as manual}
+        {#each invManuals as manual}
         <div style="margin: 1rem; padding: 1rem; background-color: #999; border-radius: 0.75rem;">
           <h3>{manual.title}</h3>
           <p>{manual.description}</p>

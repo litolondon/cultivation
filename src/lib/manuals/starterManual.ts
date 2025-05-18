@@ -14,7 +14,7 @@ export type Manual = {
     description: string;
     methodStats: Record<string, number>;
     methodDescription: string;
-    grade: string;
+    grade: 'Celestial' | 'Heaven' | 'Earth' | 'Mortal';
     statRequirements: Record<string, number>;
     attacks: Attack[];
     weight: number;
