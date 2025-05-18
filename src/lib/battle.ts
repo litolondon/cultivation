@@ -177,23 +177,26 @@ export function generateHumanBattler(stage: number): HumanBattler {
 
   const statRanges = {
     0: { min: 40, max: 60 },
-    1: { min: 60, max: 115 },
-    2: { min: 90, max: 150 },
-    3: { min: 130, max: 350 }
+    1: { min: 60, max: 80 },
+    2: { min: 80, max: 95 },
+    3: { min: 95, max: 105 },
+    4: { min: 105, max: 125}
   };
 
   const qiCapacityRanges = {
     0: [500, 1000],
     1: [1200, 3050],
     2: [3050, 15000],
-    3: [13000, 35000]
+    3: [13000, 30000],
+    4: [30000, 75000]
   };
 
   const spiritStoneRanges = {
     0: [25, 50],
     1: [50, 150],
     2: [120, 200],
-    3: [150, 280]
+    3: [150, 280],
+    4: [500, 1000]
   };
 
   function getRandomStatTotal(stage: number) {
@@ -349,5 +352,22 @@ export function generateHumanBattler(stage: number): HumanBattler {
     encounterDescription: encounterDescriptionOf
   };
 }
+export type BattleTurnResult = {
+  /** Who initiated this turn (player or enemy) */
+  attacker: string;
+  /** The name of the attack used (or “Run Away”) */
+  attackName: string;
+  /** Whether the attack (or flee) succeeded */
+  hit: boolean;
+  /** Amount of HP removed from the defender (0 on a miss/flee) */
+  damageDealt: number;
+  /** Defender’s remaining health after this action */
+  defenderRemainingHealth: number;
+};
+
+
+
+
+
 
 

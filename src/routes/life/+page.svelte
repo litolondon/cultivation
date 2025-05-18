@@ -2,11 +2,12 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { capitalize } from '$lib/helpers/capitalize';
-  import type { HumanBattler, BattleEncounter } from '$lib/battle';
+  import type { HumanBattler, BattleEncounter, BattleTurnResult} from '$lib/battle';
   import { generateHumanBattler } from '$lib/battle';
   import type { Manual, Attack, ManualPart } from '$lib/manuals/starterManual.ts';
   import { humbleAttackPool, richAttackPool, cultivationAttackPool, humblePartPool, richPartPool, cultivationPartPool, generateStarterManual, pickRandom, generateAttackSet } from '$lib/manuals/starterManual';
   import { earthManualPool } from '$lib/manuals/manualPool';
+
   
   
  
@@ -88,7 +89,7 @@
   let activeTreasureWindows: { id: number; treasure: Treasure | Manual; type: 'treasure' | 'manual' }[] = [];
   let activeBattleWindows: BattleEncounter[] = [];
   $: hasStarterManual = character?.manuals?.some(m => m.grade === 'Mortal') ?? false;
-  
+  let onTurn: (turn: BattleTurnResult) => void = () => {};  // default no-op callback
   let startBackgroundMusic = false;
 
   let character: Character | null = null;
@@ -925,6 +926,7 @@
         character.stats.lifespan  += 10;
       }
     }
+    
 
     if (cap <= qi) {
       if (roll >= 5) {
@@ -969,6 +971,80 @@
 
     saveCharacter();
   }
+
+  function tryBreakthroughNascentSoul() {
+    if (!character) return;
+    if (character.qiPoints < 30000 || !character.stage[4]) return;
+
+    const roll = (Math.random() * 100) + luck;
+    let isBreak = false;
+    const qi = character.qiPoints;
+    const cap = character.qiCapacity;
+
+    function setBodyLifespanPoints() {
+      if (cap >= 75000) {
+        character.unallocatedPoints += 18;
+        character.stats.constitution += 15;
+        character.qiCapacity *= 1.3;
+        character.stats.lifespan  += 35;
+      } else if (cap >= 45000){
+        character.unallocatedPoints += 12;
+        character.stats.constitution += 10;
+        character.qiCapacity *= 1.35;
+        character.stats.lifespan  += 25;
+      } else {
+        character.unallocatedPoints += 9;
+        character.stats.constitution += 5;
+        character.qiCapacity *= 1.3;
+        character.stats.lifespan  += 15;
+      }
+    }
+    
+
+    if (cap <= qi) {
+      if (roll <= 5) {
+        isBreak = true;
+        setBodyLifespanPoints();
+      } else {
+        character.lostHealth += ((baseStatsOf.health / 100) * 50); 
+      }
+    } else if ((qi >= (3 * (cap / 4))) && (qi < cap)) {
+      if (roll <= 35) {
+        isBreak = true;
+        setBodyLifespanPoints();
+      } else {
+        character.lostHealth += ((baseStatsOf.health / 100) * 65);
+      }
+    } else if ((qi < (3 * (cap / 4))) && (qi >=  (cap / 2))) {
+      if (roll <= 100) {
+        isBreak = true;
+        setBodyLifespanPoints();
+      } else {
+        character.lostHealth += ((baseStatsOf.health / 100) * 95);
+      }
+    }
+
+    const result = {
+    id: Date.now(),
+    title: isBreak
+      ? `Age ${character.age}: Nascent Soul Formation: Success`
+      : `Age ${character.age}: Nascent Soul Formation: Failed`,
+    description: isBreak
+      ? `You have broke through to Nascent Soul.`
+      : 'Your attempt to form a Golden Core has failed, leaving your cultivation stagnant.',
+    date: new Date().toISOString()
+  };
+
+    character.lifeEvents.unshift(result);
+    if (isBreak) {
+      character.stage[4] = false;
+      character.stage[5] = true;
+      isBreak = false;
+    }
+
+    saveCharacter();
+  }
+
   $: equippedManualUsage = character?.manuals
     ? character.manuals.find(m => m.equipped) ?? null
     : null;
@@ -1164,8 +1240,12 @@
     case 'Explore':
       const eRoll = (Math.random() * 100) + luck;
 
-      if ((character.stage[1]) || (character.stage[2]) || (character.stage[3]) || (character.stage[4])) {
-        if (eRoll >= 99) {
+      if ((character.stage[1]) || (character.stage[2]) || (character.stage[3]) || (character.stage[4]) || (character.stage[5])) {
+        if (eRoll >= 91) {
+          //treasure
+          triggerTreasureEvent();
+          
+        } else if ((eRoll >= 89) && (eRoll < 91)) {
           //encounter
           character.lifeEvents.unshift({
             id: Date.now(),
@@ -1176,9 +1256,6 @@
           character.stats.intelligence += 2;
           character.stats.luck += 2;
           character.qiPoints += Math.floor(character.qiCapacity / 10);
-        } else if ((eRoll >= 89) && (eRoll < 99)) {
-          //treasure
-          triggerTreasureEvent();
         } else if ((eRoll >= 64) && (eRoll < 89)) {
           //herb
           triggerHerbEvent();
@@ -1232,7 +1309,7 @@
    
   // Advance one year and award points
   function advanceYear() {
-    console.log(character.manuals[0])
+    console.log(equippedManualUsage)
 
     
     if (!character) return;
@@ -1517,7 +1594,9 @@
   }
 
   function triggerTreasureEvent() {
-    const poolType = Math.random() < 0.7 ? 'treasure' : 'manual'; // 70% treasure, 30% manual
+    const poolType = (Math.random() * 100) + luck < 70 
+    ? 'treasure' 
+    : 'manual'; // 70% treasure, 30% manual
 
     if (poolType === 'treasure') {
       const treasure = weightedPickTreasure(treasurePools);
@@ -1641,7 +1720,7 @@
       stamina: Math.round((((battler.stats.constitution ?? 0) + (battler.stats.dexterity ?? 0)) / 2) * realmMultiplier),
       dodge: ((((battler.stats.dexterity ?? 0) / 8) * realmMultiplier) / 2 / 1000).toFixed(2),
       pAttack: Math.round((battler.stats.strength ?? 0) * 2 * realmMultiplier),
-      sAttack: Math.round(((battler.stats.qiAffinity ?? 0) + ((battler.stats.intelligence ?? 0) / 2)) * (battler.qiPoints * 0.005)),
+      sAttack: Math.round(((battler.stats.qiAffinity ?? 0) + ((battler.stats.intelligence ?? 0) / 2)) + (battler.qiPoints * 0.005) * realmMultiplier),
       pDef: Math.round((((battler.stats.strength ?? 0) + (battler.stats.constitution ?? 0)) * 1.5) * realmMultiplier),
       sDef: Math.round((((battler.stats.qiAffinity ?? 0) + (battler.stats.intelligence ?? 0)) * 1.5) * realmMultiplier),
       persuasion: ((((battler.stats.charisma ?? 0) / 4) * realmMultiplier) / 2 / 1000).toFixed(2),
@@ -1774,29 +1853,148 @@
             prize: enemy.spiritstones // or any logic you have
           }
         ];
+      } else if (character.stage[5]) {
+        const enemy = generateHumanBattler(4);
+        const encounterId = Date.now() + Math.random();
+
+        const battleStats = calculateBattlerStats(enemy);
+        enemy.curStam = battleStats.stamina;
+        enemy.curHealth = battleStats.health;
+
+
+        activeBattleWindows = [
+          ...activeBattleWindows,
+          {
+            id: encounterId,
+            enemy,
+            stats: battleStats,
+            prize: enemy.spiritstones // or any logic you have
+          }
+        ];
       }
     }
 
-    function resolveBattle(encounterId: number, result: 'Won' | 'Lost') {
-    const encounter = activeBattleWindows.find(w => w.id === encounterId);
-    if (!encounter || !character) return;
+      function sleep(ms: number) {
+    return new Promise<void>(resolve => setTimeout(resolve, ms));
+  }
 
-    if (result === 'Won') {
-      character.spiritstones += encounter.enemy.spiritstones;
+  /**
+   * Runs one full round: player move -> wait -> enemy move
+   * Mutates player & enemy, returns turn logs
+   */
+  async function runRound(
+      chosen: Attack,
+      windowId: number
+    ): Promise<BattleTurnResult[]> {
+      const log: BattleTurnResult[] = [];
+      const window = activeBattleWindows.find(w => w.id === windowId);
+
+      // 1) Player action
+      if (chosen.name === 'Run Away') {
+        const success = Math.random() <= 0.5 + chosen.chance;
+        log.push({
+          attacker: character.name,
+          attackName: chosen.name,
+          hit: success,
+          damageDealt: 0,
+          defenderRemainingHealth: currHealth.c
+        });
+        if (success) return log;
+      } else {
+        // deduct cost
+        currStam.c -= chosen.staminaCost;
+        character.qiPoints      -= character.qiPoints * chosen.qiCost;
+
+        // guaranteed hit
+        if (chosen.t === 'spiritual') {
+          const dmg = Math.round(chosen.dmg * baseStatsOf.sAttack) + ((character.qiPoints * chosen.qiCost) / 4);
+          window.enemy.curHealth -= dmg;
+
+          log.push({
+            attacker: character.name,
+            attackName: chosen.name,
+            hit: true,
+            damageDealt: dmg,
+            defenderRemainingHealth: window.enemy.curHealth
+          });
+          if (window.enemy.curHealth === 0) return log;
+        } else if ((chosen.t === 'physical')) {
+          const dmg = Math.round((chosen.dmg * baseStatsOf.pAttack) + ((chosen.staminaCost / 100) * baseStatsOf.pAttack));
+          window.enemy.curHealth -= dmg;
+
+          log.push({
+            attacker: character.name,
+            attackName: chosen.name,
+            hit: true,
+            damageDealt: dmg,
+            defenderRemainingHealth: window.enemy.curHealth
+          });
+        }
+
+        if (window.enemy.curHealth <= (window.stats.health / 100)) {
+          resolveBattle(window.id, 'Won');
+          return log;
+        }
+        
+      }
+
+      // 2) wait before enemy turn
+      await sleep(200);
+
+      // 3) Enemy action (weighted)
+      const total = window.enemy.attack.reduce((sum, a) => sum + a.chance, 0);
+      let pick = Math.random() * total;
+      let enemyAtk =  window.enemy.attack[0]
+      for (const a of  window.enemy.attack) {
+        pick -=  a.chance;
+        if (pick <= 0) { enemyAtk = a; break; }
+      }
+
+      // deduct cost
+       window.enemy.curStam -= enemyAtk.staminaCost;
+       window.enemy.qiPoints      -=  enemyAtk.qiCost *  window.enemy.qiCapacity;
+
+      // guaranteed hit
+      const dmg2 = enemyAtk.dmg;
+      currHealth.c -= currHealth.c - dmg2;
+
+      log.push({
+        attacker:  window.enemy.name,
+        attackName: enemyAtk.name,
+        hit: true,
+        damageDealt: dmg2,
+        defenderRemainingHealth: currHealth.c
+      });
+
+      return log;
     }
 
-    character.lifeEvents.unshift({
-      id: encounter.id,
-      title: `Age ${character.age}: Battle Encounter - ${result}`,
-      description: `You encountered ${encounter.enemy.name} in battle and ${result.toLowerCase()}.`,
-      date: new Date().toISOString(),
-    });
+    // Handler called by buttons
+    async function handleAttack(attack: Attack, windowId: number) {
+      const results = await runRound(attack, windowId);
+      results.forEach(turn => onTurn(turn));
+    }
 
-    // Remove the battle window
-    activeBattleWindows = activeBattleWindows.filter(w => w.id !== encounterId);
+      function resolveBattle(encounterId: number, result: 'Won' | 'Lost') {
+      const encounter = activeBattleWindows.find(w => w.id === encounterId);
+      if (!encounter || !character) return;
 
-    saveCharacter();
-  }
+      if (result === 'Won') {
+        character.spiritstones += encounter.enemy.spiritstones;
+      }
+
+      character.lifeEvents.unshift({
+        id: encounter.id,
+        title: `Age ${character.age}: Battle Encounter - ${result}`,
+        description: `You encountered ${encounter.enemy.name} in battle and ${result.toLowerCase()}.`,
+        date: new Date().toISOString(),
+      });
+
+      // Remove the battle window
+      activeBattleWindows = activeBattleWindows.filter(w => w.id !== encounterId);
+
+      saveCharacter();
+    }
 
 </script>
 
@@ -2050,6 +2248,9 @@
       {#if (character.stage[3]) && character.qiPoints > 7500}
         <button onclick={tryBreakthroughGoldenCore}>Breakthrough Golden Core</button>
       {/if}
+      {#if (character.stage[4]) && character.qiPoints > 30000}
+        <button onclick={tryBreakthroughNascentSoul}>Breakthrough NascentSoul</button>
+      {/if}
     </div>
     
     <div class="restart">
@@ -2292,7 +2493,6 @@
     {/each}
 
     <!-- battle windows -->
-      <div class="active-battles-container"  id="active-battles-container">
         {#each activeBattleWindows as window (window.id)}
           <div class="battle-window">
             <h2>{window.enemy.encounterDescription}</h2>
@@ -2317,7 +2517,7 @@
                                 <path d="M480.25 156.355c0 161.24-224.25 324.43-224.25 324.43S31.75 317.595 31.75 156.355c0-91.41 70.63-125.13 107.77-125.13 77.65 0 116.48 65.72 116.48 65.72s38.83-65.73 116.48-65.73c37.14.01 107.77 33.72 107.77 125.14z" fill="red" fill-opacity="1"></path>
                             </g>
                         </svg>
-                        <p><strong>Health:</strong> {Math.round(window.enemy.curHealth)}/{Math.round(window.stats.health)}</p>
+                        <p><strong>Health:</strong> {window.enemy.curHealth}/{Math.round(window.stats.health)}</p>
                       </label>
                     </div>
                     <progress id="health" value={window.enemy.curHealth} max={window.stats.health}> {Math.round((window.enemy.curHealth / window.stats.health) * 100)}% </progress> 
@@ -2530,9 +2730,8 @@
                     <li>
                       <button
                         class="attack-btn"
-                        onclick={() => handleAttack(attack)}
-                        disabled={attack.staminaCost > currStam.c || attack.qiCost > character.qiPoints}
-                        style
+                        onclick={() => handleAttack(attack, window.id)}
+                        disabled={attack.staminaCost > currStam.c || (attack.qiCost * character.qiPoints) > character.qiPoints}
                       >
                         {attack.name}
                       </button>
@@ -2610,7 +2809,7 @@
             </div>
           </div>
         {/each}
-      </div>
+    
   {/if}
 
   
@@ -3045,5 +3244,27 @@ progress#qi-progress::-moz-progress-bar {
   background-color: blue; /* Red color for Firefox */
   border-radius: 10px;
 }
+
+.attack-btn {
+  padding: 0.5rem 1rem;
+  background-color: #2d8a3a;
+  border: none;
+  color: white;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.attack-btn:hover:not(:disabled) {
+  background-color: #246f30;
+}
+
+.attack-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: red;
+}
+
 </style>
 
